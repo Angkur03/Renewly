@@ -76,6 +76,37 @@ struct CurrencyCatalogTests {
         #expect(catalog.search("bitcoin").isEmpty)
     }
 
+    @Test("Default catalog lists every circulating currency and no retired ones")
+    func coversAllCirculatingCurrencies() {
+        let full = CurrencyCatalog(displayLocale: Locale(identifier: "en_US"))
+        #expect(full.all.count == CurrencyCatalog.circulatingCodes.count)
+        #expect(full.all.count >= 150)
+        for code in ["VED", "XCG", "ZWG", "SLE", "MRU", "STN", "SSP", "BTN", "KPW"] {
+            #expect(full.contains(code), "\(code) should be listed")
+            #expect(full.option(for: code).name != code, "\(code) should have a readable name")
+        }
+        for retired in ["HRK", "VEF", "CUC", "SLL", "DEM"] {
+            #expect(!full.contains(retired), "\(retired) is no longer in circulation")
+        }
+    }
+
+    @Test("Every country's currency can be found")
+    func everyCountryIsCovered() {
+        let full = CurrencyCatalog(displayLocale: Locale(identifier: "en_US"))
+        let countryCount = Set(full.all.flatMap(\.countries)).count
+        #expect(countryCount >= 190)
+    }
+
+    @Test("Searching by country finds the currency it uses")
+    func searchByCountry() {
+        let full = CurrencyCatalog(displayLocale: Locale(identifier: "en_US"))
+        #expect(full.search("Ecuador").first?.code == "USD")
+        #expect(full.search("Germany").first?.code == "EUR")
+        #expect(full.search("Senegal").first?.code == "XOF")
+        #expect(full.search("Bangladesh").first?.code == "BDT")
+        #expect(full.option(for: "EUR").countries.count > 20)
+    }
+
     @Test("Suggestions start with the selection and device currency, without duplicates")
     func suggestionsOrder() {
         let codes = catalog.suggestions(selected: "BDT", device: "USD").map(\.code)

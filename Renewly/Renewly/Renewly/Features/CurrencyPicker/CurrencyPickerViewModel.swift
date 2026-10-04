@@ -41,6 +41,6 @@ final class CurrencyPickerViewModel {
     }
 
     var resultsTitle: String {
-        isSearching ? "Results" : "All currencies"
+        isSearching ? "Results" : "All currencies · \(catalog.all.count)"
     }
 }

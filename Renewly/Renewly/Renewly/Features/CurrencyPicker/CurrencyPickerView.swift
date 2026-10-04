@@ -53,7 +53,7 @@ struct CurrencyPickerView: View {
             .searchable(
                 text: $viewModel.searchText,
                 placement: .navigationBarDrawer(displayMode: .always),
-                prompt: "Name, code or symbol"
+                prompt: "Currency, code, symbol or country"
             )
             .autocorrectionDisabled()
             .scrollDismissesKeyboard(.immediately)
@@ -98,6 +98,12 @@ struct CurrencyRow: View {
                 Text(option.symbol == option.code ? option.code : "\(option.code) · \(option.symbol)")
                     .appFont(.caption)
                     .foregroundStyle(.secondary)
+                if let countries = countriesSummary {
+                    Text(countries)
+                        .appFont(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                }
             }
             Spacer(minLength: 8)
             if isSelected {
@@ -110,6 +116,14 @@ struct CurrencyRow: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(option.name), \(option.code)")
+    }
+
+    /// For currencies shared by several countries, e.g. "Andorra, Austria, Belgium +33 more".
+    private var countriesSummary: String? {
+        guard option.countries.count > 1 else { return nil }
+        let shown = option.countries.prefix(3).joined(separator: ", ")
+        let remaining = option.countries.count - 3
+        return remaining > 0 ? "\(shown) +\(remaining) more" : shown
     }
 }
 
