@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Info.plist
+ Renewly
+
+ Created by Md Mehedi Hasan Angkur on 2026-10-04.
+ Copyright © 2026. All rights reserved.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+		<key>UIImageName</key>
+		<string>LaunchLogo</string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<false/>
+	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>ClashDisplay-Medium.otf</string>
+		<string>Satoshi-Bold.otf</string>
+		<string>JetBrainsMono-Regular.ttf</string>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,46 @@
+Act as a Principal iOS Engineer specializing in Swift 6, SwiftUI, and local-first iOS architecture.
+
+Build a privacy-first, on-device iOS application to track subscriptions and warranty cards called "GuardVault" with zero backend, no login, and full local persistence.
+
+Tech Stack & Constraints:
+- Architecture: 100% on-device local storage using SwiftData. No accounts, no network authentication, zero external servers.
+- Notifications: Local alerts via UNUserNotificationCenter.
+- File Storage: Scanned receipt/warranty card images must be written directly to the local Application Support directory (storing relative disk paths in SwiftData to keep database queries lightweight).
+- In-App Purchases: StoreKit 2 local entitlement checks via Transaction.currentEntitlements.
+
+Core Requirements to Implement:
+
+1. Appearance & Custom Typography Engine:
+   - Three-mode theme selector: System, Light, and Dark, persisted in @AppStorage("app_theme"). Apply dynamically at the WindowGroup level using .preferredColorScheme.
+   - Dynamic Font System:
+     * Free users: Default system typography (SF Pro / SF Pro Rounded).
+     * Pro users: Unlocks custom bundled boutique fonts (e.g., "ClashDisplay-Medium", "Satoshi-Bold", "JetBrainsMono-Regular").
+     * Provide a unified ViewModifier or Font extension (e.g., .vaultFont(.headline)) that automatically switches font family based on Pro status.
+
+2. SwiftData Models:
+   - TrackedItem: id (UUID), title (String), categoryRaw (Subscription vs. Warranty), cost (Double), currencyCode (String), startDate (Date), expirationDate (Date), isNotificationEnabled (Bool), serialNumber (String?), retailer (String?), billingCycleRaw (Monthly/Quarterly/Yearly), cancellationURL (String?), receiptImagePath (String?), createdAt (Date).
+
+3. Local Notification & Quota Gatekeeper:
+   - Free Tier Limit: Hard-capped at 3 active notification schedules (max 3 tracked items with active alerts).
+   - Pro Tier: Unlimited local notifications.
+   - Manager Implementation:
+     * Request permissions gracefully.
+     * Before scheduling, verify if current count of pending notifications has reached the free quota. If reached and the user is not Pro, return a custom error/flag to present the paywall.
+     * Schedule multi-interval alerts (e.g., 30 days, 7 days, 1 day prior) at 09:00 AM local time.
+     * Clean up and cancel pending triggers when items are deleted or modified.
+
+4. UI & Visual Design (Modern, Premium, Tactile):
+   - Dashboard:
+     * Glassmorphic header card showing: Total monthly subscription burn + Total capital protected under active warranty.
+     * Quick filter chips: All, Subscriptions, Warranties, Expiring Soon (< 14 days).
+     * Card design with subtle 1px translucent border highlight (Color.white.opacity(0.12)), clean badge indicators, and rigid haptic feedback on interactions.
+   - Add/Edit Item Sheet:
+     * Toggle between Subscription and Warranty.
+     * Camera capture / photo picker placeholder for receipt attachment.
+     * Form fields for price, renewal cycle, serial number, and expiration date.
+   - Settings View:
+     * Theme selector (System / Light / Dark).
+     * Font selector (with lock icons for free users).
+     * Pro status card & restore purchases button.
+
+Ensure all code follows Swift 6 concurrency standards (@MainActor, async/await) and clean modular folder separation.
