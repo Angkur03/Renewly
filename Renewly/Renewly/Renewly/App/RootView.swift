@@ -35,7 +35,11 @@ struct RootView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            DashboardView(dependencies: dependencies, isUsingTemporaryStorage: isUsingTemporaryStorage)
+            DashboardView(
+                dependencies: dependencies,
+                isUsingTemporaryStorage: isUsingTemporaryStorage,
+                onOpenDetails: { path.append($0) }
+            )
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
                     case .settings:

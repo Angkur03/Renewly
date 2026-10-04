@@ -31,6 +31,8 @@ enum EditorTarget: Identifiable {
 struct DashboardView: View {
     let dependencies: AppDependencies
     let isUsingTemporaryStorage: Bool
+    /// Shows the read-only detail page (receipt, PDF export) for an item.
+    let onOpenDetails: (TrackedItem) -> Void
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
@@ -44,9 +46,14 @@ struct DashboardView: View {
     /// Re-evaluated on foreground and at midnight so "days left" badges never go stale.
     @State private var now = Date.now
 
-    init(dependencies: AppDependencies, isUsingTemporaryStorage: Bool) {
+    init(
+        dependencies: AppDependencies,
+        isUsingTemporaryStorage: Bool,
+        onOpenDetails: @escaping (TrackedItem) -> Void = { _ in }
+    ) {
         self.dependencies = dependencies
         self.isUsingTemporaryStorage = isUsingTemporaryStorage
+        self.onOpenDetails = onOpenDetails
         _viewModel = State(initialValue: DashboardViewModel(dependencies: dependencies))
     }
 
@@ -148,12 +155,14 @@ struct DashboardView: View {
     }
 
     private func card(for item: TrackedItem) -> some View {
-        ZStack {
-            NavigationLink(value: item) { EmptyView() }
-                .opacity(0)
+        Button {
+            viewModel.registerInteraction()
+            editorTarget = .edit(item)
+        } label: {
             ItemCardView(item: item, now: now)
         }
-        .simultaneousGesture(TapGesture().onEnded { viewModel.registerInteraction() })
+        .buttonStyle(.plain)
+        .accessibilityHint("Opens the editor")
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
                 pendingDeletion = item
@@ -161,9 +170,9 @@ struct DashboardView: View {
                 Label("Delete", systemImage: "trash")
             }
             Button {
-                editorTarget = .edit(item)
+                onOpenDetails(item)
             } label: {
-                Label("Edit", systemImage: "pencil")
+                Label("Details", systemImage: "info.circle")
             }
             .tint(.indigo)
         }
@@ -172,6 +181,11 @@ struct DashboardView: View {
                 editorTarget = .edit(item)
             } label: {
                 Label("Edit", systemImage: "pencil")
+            }
+            Button {
+                onOpenDetails(item)
+            } label: {
+                Label("View Details", systemImage: "info.circle")
             }
             Button(role: .destructive) {
                 pendingDeletion = item
