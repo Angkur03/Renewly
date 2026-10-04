@@ -66,8 +66,10 @@ struct RootView: View {
         }
         #if DEBUG
         .task {
-            if UserDefaults.standard.string(forKey: "open_route") == "insights" {
-                path.append(AppRoute.insights)
+            switch UserDefaults.standard.string(forKey: "open_route") {
+            case "insights": path.append(AppRoute.insights)
+            case "settings": path.append(AppRoute.settings)
+            default: break
             }
         }
         #endif

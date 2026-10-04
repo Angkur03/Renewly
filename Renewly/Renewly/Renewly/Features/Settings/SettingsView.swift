@@ -91,10 +91,7 @@ struct SettingsView: View {
             }
             #endif
 
-            Section {
-                Label("All data stays on this device. No account, no servers, no tracking.", systemImage: "lock.shield")
-                    .foregroundStyle(.secondary)
-            }
+            helpSection
         }
         .appFont(.body)
         .scrollContentBackground(.hidden)
@@ -105,6 +102,18 @@ struct SettingsView: View {
         }
         .sheet(item: $viewModel.lockedFeature) { feature in
             PaywallView(entitlements: viewModel.entitlements, highlighting: feature)
+        }
+        .sheet(isPresented: $viewModel.isMailComposerPresented) {
+            MailComposeView(email: viewModel.makeSupportEmail())
+                .ignoresSafeArea()
+        }
+        .alert("Contact Support", isPresented: $viewModel.isSupportAddressPresented) {
+            Button("Copy Address") {
+                UIPasteboard.general.string = AppLinks.supportAddress
+            }
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("No mail app is set up on this device. Email us at \(AppLinks.supportAddress).")
         }
         .manageSubscriptionsSheet(isPresented: $viewModel.isManageSubscriptionsPresented)
         .task(id: viewModel.isManageSubscriptionsPresented) {
@@ -134,6 +143,61 @@ struct SettingsView: View {
             Button("OK", role: .cancel) {}
         } message: { message in
             Text(message)
+        }
+    }
+
+    private var helpSection: some View {
+        Section {
+            if let privacyPolicy = AppLinks.privacyPolicy {
+                Link(destination: privacyPolicy) {
+                    linkRow("Privacy Policy", systemImage: "hand.raised.fill", trailingImage: "arrow.up.right")
+                }
+            }
+            Button(action: contactSupport) {
+                linkRow("Contact Support", systemImage: "envelope.fill", detail: AppLinks.supportAddress, trailingImage: "chevron.right")
+            }
+            .accessibilityHint("Opens an email to support with your device details")
+        } header: {
+            Text("Help & Privacy")
+        } footer: {
+            Label("All data stays on this device. No account, no servers, no tracking.", systemImage: "lock.shield")
+        }
+    }
+
+    private func linkRow(_ title: String, systemImage: String, detail: String? = nil, trailingImage: String) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Label(title, systemImage: systemImage)
+                    .foregroundStyle(Color.primary)
+                if let detail {
+                    Text(detail)
+                        .appFont(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading, 36)
+                }
+            }
+            Spacer()
+            Image(systemName: trailingImage)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .contentShape(Rectangle())
+    }
+
+    /// In-app composer when Mail is set up, otherwise the default mail app, otherwise show the address to copy.
+    private func contactSupport() {
+        if MailComposeView.canSendMail {
+            viewModel.isMailComposerPresented = true
+            return
+        }
+        guard let url = viewModel.makeSupportEmail().mailtoURL else {
+            viewModel.isSupportAddressPresented = true
+            return
+        }
+        openURL(url) { accepted in
+            if !accepted {
+                viewModel.isSupportAddressPresented = true
+            }
         }
     }
 

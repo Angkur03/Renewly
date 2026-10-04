@@ -18,6 +18,9 @@ final class SettingsViewModel {
     var isManageSubscriptionsPresented = false
     var statusMessage: String?
     var errorMessage: String?
+    var isMailComposerPresented = false
+    /// Shown when the device has no mail app, so the user can still copy the address.
+    var isSupportAddressPresented = false
     private(set) var authorization: NotificationAuthorization = .authorized
 
     @ObservationIgnored let entitlements: any EntitlementProviding
@@ -39,6 +42,10 @@ final class SettingsViewModel {
 
     func isAlwaysOn(offset: Int) -> Bool {
         ReminderPreferences.isAlwaysOn(offset, isPro: isPro)
+    }
+
+    func makeSupportEmail() -> SupportEmail {
+        SupportEmail(info: .current(isPro: isPro))
     }
 
     func refreshAuthorization() async {
