@@ -56,15 +56,13 @@ struct RenewlyApp: App {
     }
 
     /// Falls back to an in-memory store so the app stays usable if the on-disk store cannot open.
+    /// The on-disk store is left untouched in that case, so a fixed update can still open it.
     private static func makeModelContainer() -> (container: ModelContainer, isTemporary: Bool) {
-        let schema = Schema([TrackedItem.self])
         do {
-            let configuration = ModelConfiguration(schema: schema)
-            return (try ModelContainer(for: schema, configurations: [configuration]), false)
+            return (try RenewlyStore.makeContainer(), false)
         } catch {
             do {
-                let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-                return (try ModelContainer(for: schema, configurations: [configuration]), true)
+                return (try RenewlyStore.makeContainer(inMemory: true), true)
             } catch {
                 fatalError("SwiftData could not create an in-memory store: \(error)")
             }

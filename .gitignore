@@ -1,0 +1,26 @@
+# .gitignore
+# Renewly
+#
+# Created by Md Mehedi Hasan Angkur on 2026-10-04.
+# Copyright © 2026. All rights reserved.
+
+# Xcode per-user state
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+
+# Build output
+build/
+DerivedData/
+*.xcresult
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# macOS
+.DS_Store

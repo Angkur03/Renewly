@@ -262,6 +262,9 @@ struct PaywallView: View {
                 if let termsURL = PaywallViewModel.termsURL {
                     Link("Terms of Use", destination: termsURL)
                 }
+                if let privacyPolicy = AppLinks.privacyPolicy {
+                    Link("Privacy Policy", destination: privacyPolicy)
+                }
             }
             .appFont(.footnote)
         }
