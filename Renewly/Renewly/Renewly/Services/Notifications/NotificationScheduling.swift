@@ -20,10 +20,31 @@ nonisolated enum AlertTrigger: Sendable, Equatable {
 }
 
 nonisolated struct ScheduledAlert: Sendable, Equatable {
+    static let itemIDKey = "itemID"
+
     let identifier: String
     let title: String
     let body: String
     let trigger: AlertTrigger
+    /// The tracked item the alert is about; tapping the notification opens it.
+    let itemID: UUID?
+
+    init(identifier: String, title: String, body: String, trigger: AlertTrigger, itemID: UUID? = nil) {
+        self.identifier = identifier
+        self.title = title
+        self.body = body
+        self.trigger = trigger
+        self.itemID = itemID
+    }
+
+    var userInfo: [String: String] {
+        itemID.map { [Self.itemIDKey: $0.uuidString] } ?? [:]
+    }
+
+    static func itemID(from userInfo: [AnyHashable: Any]) -> UUID? {
+        guard let raw = userInfo[itemIDKey] as? String else { return nil }
+        return UUID(uuidString: raw)
+    }
 
     var fireDateComponents: DateComponents? {
         guard case .date(let components) = trigger else { return nil }

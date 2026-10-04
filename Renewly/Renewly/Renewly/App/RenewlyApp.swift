@@ -29,7 +29,11 @@ struct RenewlyApp: App {
     var body: some Scene {
         WindowGroup {
             ZStack {
-                RootView(dependencies: dependencies, isUsingTemporaryStorage: isUsingTemporaryStorage)
+                RootView(
+                    dependencies: dependencies,
+                    isUsingTemporaryStorage: isUsingTemporaryStorage,
+                    notificationRouter: appDelegate.notificationRouter
+                )
                 if isShowingSplash {
                     SplashView {
                         withAnimation(.easeOut(duration: 0.45)) {

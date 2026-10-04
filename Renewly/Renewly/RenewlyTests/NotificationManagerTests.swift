@@ -184,6 +184,29 @@ struct NotificationManagerTests {
         #expect(alerts.map(\.identifier) == ["\(item.id.uuidString)-3d", "\(item.id.uuidString)-1d"])
     }
 
+    @Test("Every reminder carries its item, so tapping it can open that item")
+    func remindersCarryItemID() throws {
+        let manager = makeManager(center: FakeNotificationCenter())
+        let item = makeItem(daysUntilExpiration: 2)
+
+        let alerts = manager.alerts(for: item, deliverMissedReminder: true)
+
+        #expect(!alerts.isEmpty)
+        for alert in alerts {
+            #expect(alert.itemID == item.id)
+            #expect(ScheduledAlert.itemID(from: alert.userInfo) == item.id)
+        }
+    }
+
+    @Test("Test alerts and malformed payloads open nothing")
+    func payloadWithoutItemOpensNothing() {
+        let alert = ScheduledAlert(identifier: "test", title: "t", body: "b", trigger: .after(seconds: 1))
+        #expect(alert.userInfo.isEmpty)
+        #expect(ScheduledAlert.itemID(from: [:]) == nil)
+        #expect(ScheduledAlert.itemID(from: [ScheduledAlert.itemIDKey: "not-a-uuid"]) == nil)
+        #expect(ScheduledAlert.itemID(from: [ScheduledAlert.itemIDKey: 42]) == nil)
+    }
+
     @Test("Rescheduling replaces existing reminders instead of duplicating them")
     func rescheduleCancelsFirst() async throws {
         let center = FakeNotificationCenter()

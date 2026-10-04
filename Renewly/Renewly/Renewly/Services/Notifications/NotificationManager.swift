@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import OSLog
 import UserNotifications
 
 nonisolated final class NotificationManager: NotificationScheduling {
@@ -130,7 +131,8 @@ nonisolated final class NotificationManager: NotificationScheduling {
                 identifier: Self.identifier(for: item.id, daysBefore: daysBefore),
                 title: item.title,
                 body: Self.body(for: item.category, daysBefore: daysBefore),
-                trigger: .date(calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate))
+                trigger: .date(calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)),
+                itemID: item.id
             )
         }
 
@@ -159,7 +161,8 @@ nonisolated final class NotificationManager: NotificationScheduling {
             identifier: Self.missedIdentifier(for: item.id),
             title: item.title,
             body: Self.body(for: item.category, daysBefore: daysLeft),
-            trigger: .after(seconds: Self.missedReminderDelay)
+            trigger: .after(seconds: Self.missedReminderDelay),
+            itemID: item.id
         )
     }
 
@@ -191,6 +194,9 @@ nonisolated final class NotificationManager: NotificationScheduling {
 }
 
 nonisolated struct LiveNotificationCenter: NotificationCenterClient {
+    private static let iconResource = "NotificationIcon"
+    private static let logger = Logger(subsystem: "com.beleiveinAllahRenewly.Renewly", category: "Notifications")
+
     private var center: UNUserNotificationCenter { .current() }
 
     func authorizationStatus() async -> NotificationAuthorization {
@@ -216,6 +222,13 @@ nonisolated struct LiveNotificationCenter: NotificationCenterClient {
         content.title = alert.title
         content.body = alert.body
         content.sound = .default
+        content.userInfo = alert.userInfo
+        if let itemID = alert.itemID {
+            content.threadIdentifier = itemID.uuidString
+        }
+        if let icon = Self.iconAttachment() {
+            content.attachments = [icon]
+        }
 
         let trigger: UNNotificationTrigger
         switch alert.trigger {
@@ -234,5 +247,23 @@ nonisolated struct LiveNotificationCenter: NotificationCenterClient {
 
     func pendingAlertIdentifiers() async -> [String] {
         await center.pendingNotificationRequests().map(\.identifier)
+    }
+
+    /// The app icon shown as the notification's thumbnail. iOS moves attachment files into its own store,
+    /// so every alert needs a fresh copy of the bundled image.
+    private static func iconAttachment() -> UNNotificationAttachment? {
+        guard let source = Bundle.main.url(forResource: iconResource, withExtension: "png") else {
+            logger.error("Notification icon is missing from the bundle.")
+            return nil
+        }
+        let copy = FileManager.default.temporaryDirectory
+            .appending(path: "\(iconResource)-\(UUID().uuidString).png")
+        do {
+            try FileManager.default.copyItem(at: source, to: copy)
+            return try UNNotificationAttachment(identifier: iconResource, url: copy)
+        } catch {
+            logger.error("Could not attach notification icon: \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
     }
 }

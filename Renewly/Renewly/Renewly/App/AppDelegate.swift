@@ -11,6 +11,8 @@ import UserNotifications
 
 /// Without a notification-center delegate, iOS silently drops alerts that fire while the app is in the foreground.
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    let notificationRouter = NotificationRouter()
+
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
@@ -29,5 +31,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
-    ) async {}
+    ) async {
+        guard response.actionIdentifier == UNNotificationDefaultActionIdentifier,
+              let itemID = ScheduledAlert.itemID(from: response.notification.request.content.userInfo) else { return }
+        await notificationRouter.open(itemID: itemID)
+    }
 }

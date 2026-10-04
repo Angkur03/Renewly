@@ -6,6 +6,7 @@
 // Copyright © 2026. All rights reserved.
 //
 
+import OSLog
 import SwiftData
 import SwiftUI
 
@@ -20,6 +21,7 @@ nonisolated enum AppRoute: Hashable, Sendable {
 struct RootView: View {
     let dependencies: AppDependencies
     let isUsingTemporaryStorage: Bool
+    let notificationRouter: NotificationRouter
 
     @AppStorage(AppStorageKey.remindersEnabled) private var remindersEnabled = true
     @AppStorage(AppStorageKey.reminderOffsets) private var reminderOffsetsRaw = ReminderPreferences.defaultOffsetsRaw
@@ -56,6 +58,9 @@ struct RootView: View {
                     ItemDetailView(item: item, dependencies: dependencies)
                 }
         }
+        .onChange(of: notificationRouter.pendingItemID, initial: true) {
+            openItemFromNotification()
+        }
         .task {
             await dependencies.entitlements.observeTransactionUpdates()
         }
@@ -89,14 +94,34 @@ struct RootView: View {
             }
         }
     }
+
+    /// Replaces whatever screen is showing with the reminded item, so Back always returns to the dashboard.
+    /// Items deleted after their reminder was delivered are skipped.
+    private func openItemFromNotification() {
+        guard let itemID = notificationRouter.consume() else { return }
+        let descriptor = FetchDescriptor<TrackedItem>(predicate: #Predicate { $0.id == itemID })
+        let item: TrackedItem?
+        do {
+            item = try modelContext.fetch(descriptor).first
+        } catch {
+            Self.logger.error("Could not load the item for a tapped notification.")
+            return
+        }
+        guard let item else { return }
+        var newPath = NavigationPath()
+        newPath.append(item)
+        path = newPath
+    }
+
+    private static let logger = Logger(subsystem: "com.beleiveinAllahRenewly.Renewly", category: "Navigation")
 }
 
 #Preview("Populated") {
-    RootView(dependencies: PreviewData.dependencies(), isUsingTemporaryStorage: false)
+    RootView(dependencies: PreviewData.dependencies(), isUsingTemporaryStorage: false, notificationRouter: NotificationRouter())
         .modelContainer(PreviewData.container(populated: true))
 }
 
 #Preview("Empty") {
-    RootView(dependencies: PreviewData.dependencies(), isUsingTemporaryStorage: false)
+    RootView(dependencies: PreviewData.dependencies(), isUsingTemporaryStorage: false, notificationRouter: NotificationRouter())
         .modelContainer(PreviewData.container(populated: false))
 }
