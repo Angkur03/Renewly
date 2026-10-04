@@ -40,6 +40,11 @@ nonisolated struct ReminderPreferences: Equatable, Sendable {
         return "\(list) \(unit) before"
     }
 
+    /// The schedule a plan actually gets: free users only receive the 3-day reminder.
+    func limited(isPro: Bool) -> ReminderPreferences {
+        isPro ? self : ReminderPreferences(isEnabled: isEnabled, offsets: [Self.requiredOffset])
+    }
+
     static func isRequired(_ offset: Int) -> Bool {
         offset == requiredOffset
     }

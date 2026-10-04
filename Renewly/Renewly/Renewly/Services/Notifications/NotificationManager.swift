@@ -64,7 +64,7 @@ nonisolated final class NotificationManager: NotificationScheduling {
         guard canEnableAlerts(for: item.id, activeAlertItemIDs: activeAlertItemIDs, isPro: isPro) else {
             throw .quotaExceeded(limit: Self.freeAlertLimit)
         }
-        let preferences = preferences.current()
+        let preferences = preferences.current().limited(isPro: isPro)
         guard preferences.isEnabled else {
             await cancel(for: item.id)
             return

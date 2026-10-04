@@ -20,6 +20,15 @@ struct ReminderPreferencesTests {
         #expect(preferences.scheduleDescription == "30, 7, 3 and 1 day before")
     }
 
+    @Test("Free plan is limited to the 3-day reminder; Pro keeps the chosen schedule")
+    func limitedByPlan() {
+        let chosen = ReminderPreferences(offsets: [30, 7, 1])
+        #expect(chosen.limited(isPro: true) == chosen)
+        #expect(chosen.limited(isPro: false).offsets == [3])
+        #expect(chosen.limited(isPro: false).scheduleDescription == "3 days before")
+        #expect(!ReminderPreferences(isEnabled: false).limited(isPro: false).isEnabled)
+    }
+
     @Test("The 3-day reminder cannot be removed")
     func threeDaysIsRequired() {
         #expect(ReminderPreferences(offsets: []).offsets == [3])

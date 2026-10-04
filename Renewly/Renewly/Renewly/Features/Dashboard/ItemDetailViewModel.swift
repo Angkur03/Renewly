@@ -25,6 +25,7 @@ final class ItemDetailViewModel {
     private(set) var isExporting = false
     private(set) var isDeleting = false
     var exportedPDF: ExportedPDF?
+    var paywallFeature: ProFeature?
     var errorMessage: String?
 
     @ObservationIgnored private let dependencies: AppDependencies
@@ -48,7 +49,15 @@ final class ItemDetailViewModel {
         }
     }
 
+    var isPro: Bool { dependencies.entitlements.isPro }
+    var entitlements: any EntitlementProviding { dependencies.entitlements }
+
+    /// Free users are shown the paywall instead of exporting.
     func exportPDF(for item: TrackedItem, reminders: ReminderPreferences) async {
+        guard isPro else {
+            paywallFeature = .pdfExport
+            return
+        }
         guard !isExporting else { return }
         isExporting = true
         defer { isExporting = false }

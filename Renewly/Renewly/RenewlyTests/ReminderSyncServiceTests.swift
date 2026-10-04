@@ -62,8 +62,8 @@ struct ReminderSyncServiceTests {
         #expect(result == ReminderSyncResult(rescheduled: 3, disabledOverQuota: 2, failed: 0))
         #expect(try enabledTitles(in: context) == ["Item 0", "Item 1", "Item 2"])
         let pending = await center.pendingAlertIdentifiers()
-        #expect(pending.count == 3 * NotificationManager.reminderOffsets.count)
-        #expect(pending.contains { $0.hasSuffix("-3d") })
+        #expect(pending.count == 3)
+        #expect(pending.allSatisfy { $0.hasSuffix("-3d") })
     }
 
     @Test("Pro reschedules every item with alerts")

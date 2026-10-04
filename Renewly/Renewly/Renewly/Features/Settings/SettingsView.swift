@@ -103,6 +103,9 @@ struct SettingsView: View {
         .sheet(isPresented: $viewModel.isPaywallPresented) {
             PaywallView(entitlements: viewModel.entitlements)
         }
+        .sheet(item: $viewModel.lockedFeature) { feature in
+            PaywallView(entitlements: viewModel.entitlements, highlighting: feature)
+        }
         .manageSubscriptionsSheet(isPresented: $viewModel.isManageSubscriptionsPresented)
         .task(id: viewModel.isManageSubscriptionsPresented) {
             guard !viewModel.isManageSubscriptionsPresented else { return }
@@ -151,10 +154,40 @@ struct SettingsView: View {
         } header: {
             Text("Notifications")
         } footer: {
-            Text(remindersEnabled
-                 ? "Alerts arrive at 9:00 AM. The 3-day reminder is always included, so you are warned before every renewal or warranty ends."
-                 : "No reminders will be sent. Items keep their reminder setting and resume when you turn this back on.")
+            Text(notificationsFooter)
         }
+    }
+
+    private var notificationsFooter: String {
+        guard remindersEnabled else {
+            return "No reminders will be sent. Items keep their reminder setting and resume when you turn this back on."
+        }
+        let base = "Alerts arrive at 9:00 AM. The 3-day reminder is always included, so you are warned before every renewal or warranty ends."
+        return viewModel.isPro ? base : "\(base) Renewly Pro adds 30, 7 and 1 day alerts."
+    }
+
+    @ViewBuilder
+    private func reminderOffsetRow(_ offset: Int) -> some View {
+        if viewModel.isLocked(offset: offset) {
+            lockedOffsetRow(offset)
+        } else {
+            offsetToggle(offset)
+        }
+    }
+
+    private func lockedOffsetRow(_ offset: Int) -> some View {
+        Button {
+            viewModel.lockedFeature = .extraReminders
+        } label: {
+            HStack {
+                Text(ReminderPreferences.title(for: offset))
+                    .foregroundStyle(Color.primary)
+                Spacer()
+                BadgeView("Pro", systemImage: "lock.fill", tint: .yellow)
+            }
+        }
+        .padding(.leading, 8)
+        .accessibilityHint("Requires Renewly Pro")
     }
 
     private var permissionDeniedRow: some View {
@@ -171,7 +204,7 @@ struct SettingsView: View {
         .padding(.vertical, 4)
     }
 
-    private func reminderOffsetRow(_ offset: Int) -> some View {
+    private func offsetToggle(_ offset: Int) -> some View {
         let isRequired = ReminderPreferences.isRequired(offset)
         let binding = Binding<Bool>(
             get: { isRequired || ReminderPreferences.decode(reminderOffsetsRaw).contains(offset) },

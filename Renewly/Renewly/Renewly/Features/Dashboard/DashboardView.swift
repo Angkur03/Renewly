@@ -185,7 +185,8 @@ struct DashboardView: View {
     private var summaryCard: some View {
         let summary = SummaryHeaderCard(
             summary: viewModel.summary(for: items, currencyCode: primaryCurrency, now: now),
-            showsInsightsHint: !items.isEmpty
+            showsInsightsHint: !items.isEmpty,
+            isInsightsLocked: !dependencies.entitlements.isPro
         )
         if items.isEmpty {
             summary

@@ -41,7 +41,7 @@ struct RootView: View {
                     case .settings:
                         SettingsView(dependencies: dependencies)
                     case .insights:
-                        InsightsView()
+                        InsightsView(entitlements: dependencies.entitlements)
                     #if DEBUG
                     case .developerTools:
                         DeveloperToolsView(dependencies: dependencies)

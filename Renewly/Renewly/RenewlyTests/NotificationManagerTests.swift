@@ -125,7 +125,17 @@ struct NotificationManagerTests {
         let active: Set<UUID> = [itemID, UUID(), UUID()]
 
         try await manager.schedule(for: makeItem(id: itemID, daysUntilExpiration: 60), activeAlertItemIDs: active, isPro: false)
-        #expect(await center.added.count == 4)
+        #expect(await center.added.map(\.identifier) == ["\(itemID.uuidString)-3d"])
+    }
+
+    @Test("Free plan schedules only the 3-day reminder, whatever is chosen in Settings")
+    func freePlanGetsThreeDayOnly() async throws {
+        let center = FakeNotificationCenter()
+        let manager = makeManager(center: center)
+        let item = makeItem(daysUntilExpiration: 60)
+
+        try await manager.schedule(for: item, activeAlertItemIDs: [], isPro: false)
+        #expect(await center.added.map(\.identifier) == ["\(item.id.uuidString)-3d"])
     }
 
     @Test("Pro users have no quota")
@@ -146,7 +156,7 @@ struct NotificationManagerTests {
         let manager = makeManager(center: center)
         let item = makeItem(daysUntilExpiration: 60)
 
-        try await manager.schedule(for: item, activeAlertItemIDs: [], isPro: false)
+        try await manager.schedule(for: item, activeAlertItemIDs: [], isPro: true)
 
         let added = await center.added
         #expect(added.map(\.identifier) == [
@@ -180,8 +190,8 @@ struct NotificationManagerTests {
         let manager = makeManager(center: center)
         let item = makeItem(daysUntilExpiration: 60)
 
-        try await manager.schedule(for: item, activeAlertItemIDs: [], isPro: false)
-        try await manager.schedule(for: item, activeAlertItemIDs: [item.id], isPro: false)
+        try await manager.schedule(for: item, activeAlertItemIDs: [], isPro: true)
+        try await manager.schedule(for: item, activeAlertItemIDs: [item.id], isPro: true)
 
         #expect(await center.added.count == 4)
         #expect(await center.removed.count == 2 * NotificationManager.identifiers(for: item.id).count)
@@ -221,7 +231,7 @@ struct NotificationManagerTests {
         let manager = makeManager(center: center, preferences: ReminderPreferences(offsets: [30]))
         let item = makeItem(daysUntilExpiration: 60)
 
-        try await manager.schedule(for: item, activeAlertItemIDs: [], isPro: false)
+        try await manager.schedule(for: item, activeAlertItemIDs: [], isPro: true)
 
         #expect(await center.added.map(\.identifier) == ["\(item.id.uuidString)-30d", "\(item.id.uuidString)-3d"])
     }
@@ -285,7 +295,7 @@ struct NotificationManagerTests {
         let center = FakeNotificationCenter(status: .notDetermined, grantOnRequest: true)
         let manager = makeManager(center: center)
 
-        try await manager.schedule(for: makeItem(daysUntilExpiration: 60), activeAlertItemIDs: [], isPro: false)
+        try await manager.schedule(for: makeItem(daysUntilExpiration: 60), activeAlertItemIDs: [], isPro: true)
         #expect(await center.authorizationRequests == 1)
         #expect(await center.added.count == 4)
     }

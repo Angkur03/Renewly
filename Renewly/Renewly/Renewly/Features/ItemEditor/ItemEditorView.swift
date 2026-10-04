@@ -120,7 +120,7 @@ struct ItemEditorView: View {
                 await viewModel.loadExistingReceipt()
             }
             .sheet(isPresented: $viewModel.isPaywallPresented) {
-                PaywallView(entitlements: dependencies.entitlements)
+                PaywallView(entitlements: dependencies.entitlements, highlighting: .unlimitedReminders)
             }
             .rigidHaptic(trigger: saveTrigger)
             .rigidHaptic(trigger: viewModel.category)
@@ -130,7 +130,8 @@ struct ItemEditorView: View {
     }
 
     private var reminderFooter: String {
-        let preferences = ReminderPreferences(isEnabled: remindersEnabled, offsetsRaw: reminderOffsetsRaw)
+        let isPro = dependencies.entitlements.isPro
+        let preferences = ReminderPreferences(isEnabled: remindersEnabled, offsetsRaw: reminderOffsetsRaw).limited(isPro: isPro)
         guard viewModel.canEnableReminders else {
             return "This warranty has already expired, so there is nothing left to remind you about."
         }
@@ -138,10 +139,10 @@ struct ItemEditorView: View {
             return "Reminders are turned off for all items in Settings."
         }
         let base = "Alerts at 9:00 AM, \(preferences.scheduleDescription) the date."
-        if dependencies.entitlements.isPro {
+        if isPro {
             return base
         }
-        return "\(base) The free plan covers up to \(NotificationManager.freeAlertLimit) items."
+        return "\(base) The free plan covers up to \(NotificationManager.freeAlertLimit) items. Pro adds unlimited items and 30, 7 and 1 day alerts."
     }
 
     private func subscriptionSection(viewModel: ItemEditorViewModel) -> some View {

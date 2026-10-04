@@ -85,12 +85,21 @@ final class PaywallViewModel {
 }
 
 struct PaywallView: View {
+    /// The feature the user tried to use; it is listed first and highlighted.
+    let highlightedFeature: ProFeature?
+
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: PaywallViewModel
     @State private var purchaseTrigger = 0
 
-    init(entitlements: any EntitlementProviding) {
+    init(entitlements: any EntitlementProviding, highlighting feature: ProFeature? = nil) {
+        highlightedFeature = feature
         _viewModel = State(initialValue: PaywallViewModel(entitlements: entitlements))
+    }
+
+    private var orderedFeatures: [ProFeature] {
+        guard let highlightedFeature else { return ProFeature.allCases }
+        return [highlightedFeature] + ProFeature.allCases.filter { $0 != highlightedFeature }
     }
 
     var body: some View {
@@ -102,8 +111,14 @@ struct PaywallView: View {
                     hero
                     GlassCard {
                         VStack(alignment: .leading, spacing: 16) {
-                            feature("bell.badge.fill", title: "Unlimited reminders", detail: "Alerts for every subscription and warranty, not just \(NotificationManager.freeAlertLimit).")
-                            feature("bell.and.waves.left.and.right.fill", title: "Every reminder", detail: "30, 7, 3 and 1 day alerts on all your items, at 9:00 AM.")
+                            ForEach(orderedFeatures) { item in
+                                feature(
+                                    item.systemImage,
+                                    title: item.title,
+                                    detail: item.detail,
+                                    isHighlighted: item == highlightedFeature
+                                )
+                            }
                             feature("lock.shield.fill", title: "Still private", detail: "Your data stays on this device. No account needed.")
                         }
                     }
@@ -137,7 +152,7 @@ struct PaywallView: View {
                 .cardSurface(cornerRadius: 46)
             Text("Renewly Pro")
                 .appFont(.largeTitle)
-            Text("Never miss a renewal or a warranty claim again.")
+            Text(highlightedFeature.map { "\($0.title) is part of Renewly Pro." } ?? "Never miss a renewal or a warranty claim again.")
                 .appFont(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -252,7 +267,7 @@ struct PaywallView: View {
         }
     }
 
-    private func feature(_ systemImage: String, title: String, detail: String) -> some View {
+    private func feature(_ systemImage: String, title: String, detail: String, isHighlighted: Bool = false) -> some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: systemImage)
                 .font(.title3)
@@ -265,6 +280,18 @@ struct PaywallView: View {
                     .appFont(.subheadline)
                     .foregroundStyle(.secondary)
             }
+            Spacer(minLength: 0)
+        }
+        .padding(isHighlighted ? 12 : 0)
+        .background {
+            if isHighlighted {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.accentColor.opacity(0.12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(Color.accentColor.opacity(0.5), lineWidth: 1)
+                    )
+            }
         }
         .accessibilityElement(children: .combine)
     }
@@ -272,6 +299,10 @@ struct PaywallView: View {
 
 #Preview("Trial eligible") {
     PaywallView(entitlements: MockEntitlementService())
+}
+
+#Preview("From Insights") {
+    PaywallView(entitlements: MockEntitlementService(), highlighting: .insights)
 }
 
 #Preview("No trial") {

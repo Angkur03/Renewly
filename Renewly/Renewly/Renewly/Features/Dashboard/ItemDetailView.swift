@@ -26,6 +26,7 @@ struct ItemDetailView: View {
 
     private var reminders: ReminderPreferences {
         ReminderPreferences(isEnabled: remindersEnabled, offsetsRaw: reminderOffsetsRaw)
+            .limited(isPro: viewModel.isPro)
     }
 
     /// A deleted model must not be read; its backing data is gone.
@@ -77,7 +78,7 @@ struct ItemDetailView: View {
                     Button {
                         Task { await viewModel.exportPDF(for: item, reminders: reminders) }
                     } label: {
-                        Label("Export PDF", systemImage: "doc.richtext")
+                        Label(viewModel.isPro ? "Export PDF" : "Export PDF (Pro)", systemImage: viewModel.isPro ? "doc.richtext" : "lock.fill")
                     }
                     .disabled(viewModel.isExporting)
 
@@ -117,6 +118,9 @@ struct ItemDetailView: View {
         }
         .sheet(item: $viewModel.exportedPDF) { pdf in
             PDFPreviewView(pdf: pdf)
+        }
+        .sheet(item: $viewModel.paywallFeature) { feature in
+            PaywallView(entitlements: viewModel.entitlements, highlighting: feature)
         }
         .task(id: item.receiptImagePath) {
             await viewModel.loadReceipt(at: item.receiptImagePath)
@@ -206,8 +210,13 @@ struct ItemDetailView: View {
                     .frame(width: 48, height: 48)
                     .background(Color.accentColor.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Export as PDF")
-                        .appFont(.headline)
+                    HStack(spacing: 6) {
+                        Text("Export as PDF")
+                            .appFont(.headline)
+                        if !viewModel.isPro {
+                            BadgeView("Pro", systemImage: "crown.fill", tint: .yellow)
+                        }
+                    }
                     Text(item.receiptImagePath == nil
                          ? "Details only. Attach a receipt to include it."
                          : "Details plus the attached \(item.category == .warranty ? "card" : "receipt"), ready to print or share.")
@@ -218,6 +227,9 @@ struct ItemDetailView: View {
                 Spacer(minLength: 8)
                 if viewModel.isExporting {
                     ProgressView()
+                } else if !viewModel.isPro {
+                    Image(systemName: "lock.fill")
+                        .foregroundStyle(.secondary)
                 } else {
                     Image(systemName: "chevron.right")
                         .foregroundStyle(.tertiary)
@@ -228,7 +240,7 @@ struct ItemDetailView: View {
             .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)
-        .disabled(viewModel.isExporting || (item.receiptImagePath != nil && viewModel.receiptImage == nil && !viewModel.receiptLoadFailed))
+        .disabled(viewModel.isExporting || (viewModel.isPro && item.receiptImagePath != nil && viewModel.receiptImage == nil && !viewModel.receiptLoadFailed))
     }
 
     private func row(_ title: String, value: String) -> some View {

@@ -13,6 +13,8 @@ import Observation
 @MainActor
 final class SettingsViewModel {
     var isPaywallPresented = false
+    /// Set when a free user taps a Pro-only setting; opens the paywall focused on that feature.
+    var lockedFeature: ProFeature?
     var isManageSubscriptionsPresented = false
     var statusMessage: String?
     var errorMessage: String?
@@ -30,6 +32,10 @@ final class SettingsViewModel {
     var activeSubscription: ActiveSubscription? { entitlements.activeSubscription }
     var isProcessing: Bool { entitlements.isProcessing }
     var isSystemPermissionDenied: Bool { authorization == .denied }
+
+    func isLocked(offset: Int) -> Bool {
+        !isPro && !ReminderPreferences.isRequired(offset)
+    }
 
     func refreshAuthorization() async {
         authorization = await notifications.authorizationStatus()

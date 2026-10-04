@@ -17,6 +17,8 @@ struct InsightsView: View {
         var id: String { rawValue }
     }
 
+    let entitlements: any EntitlementProviding
+
     @Query private var items: [TrackedItem]
     @AppStorage(AppStorageKey.primaryCurrency) private var primaryCurrency = CurrencyDefaults.deviceCurrencyCode
     @Environment(\.scenePhase) private var scenePhase
@@ -24,13 +26,76 @@ struct InsightsView: View {
     @State private var period: Period = .month
     @State private var selectedMonth: Date?
     @State private var now = Date.now
+    @State private var isPaywallPresented = false
 
     private static let sliceColors: [Color] = [.accentColor, .purple, .pink, .orange, .teal]
 
     var body: some View {
         let insights = SpendingInsights.make(from: items.map(\.snapshot), currencyCode: primaryCurrency, now: now)
+        let isLocked = !entitlements.isPro && !insights.isEmpty
 
         ScrollView {
+            content(insights)
+                .blur(radius: isLocked ? 10 : 0)
+                .allowsHitTesting(!isLocked)
+                .accessibilityHidden(isLocked)
+        }
+        .scrollDisabled(isLocked)
+        .overlay {
+            if isLocked {
+                lockedCard
+                    .padding(24)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
+        }
+        .animation(.snappy, value: isLocked)
+        .background(AppBackground())
+        .navigationTitle("Insights")
+        .navigationBarTitleDisplayMode(.large)
+        .sheet(isPresented: $isPaywallPresented) {
+            PaywallView(entitlements: entitlements, highlighting: .insights)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active { now = .now }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            now = .now
+        }
+    }
+
+    private var lockedCard: some View {
+        GlassCard(cornerRadius: 28, padding: 24) {
+            VStack(spacing: 14) {
+                Image(systemName: "chart.pie.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(Color.accentColor.gradient)
+                    .padding(16)
+                    .background(Color.accentColor.opacity(0.12), in: Circle())
+                Text("Unlock Spending Insights")
+                    .appFont(.title2)
+                    .multilineTextAlignment(.center)
+                Text(ProFeature.insights.detail)
+                    .appFont(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                Button {
+                    isPaywallPresented = true
+                } label: {
+                    Label("Try Pro free", systemImage: "crown.fill")
+                        .appFont(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 4)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    @ViewBuilder
+    private func content(_ insights: SpendingInsights) -> some View {
+        Group {
             if insights.isEmpty {
                 ContentUnavailableView(
                     "No insights yet",
@@ -65,15 +130,6 @@ struct InsightsView: View {
                 }
                 .padding()
             }
-        }
-        .background(AppBackground())
-        .navigationTitle("Insights")
-        .navigationBarTitleDisplayMode(.large)
-        .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active { now = .now }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
-            now = .now
         }
     }
 
@@ -378,16 +434,23 @@ struct InsightsView: View {
     }
 }
 
-#Preview("Populated") {
+#Preview("Pro") {
     NavigationStack {
-        InsightsView()
+        InsightsView(entitlements: MockEntitlementService(isPro: true))
+    }
+    .modelContainer(PreviewData.container(populated: true))
+}
+
+#Preview("Free (locked)") {
+    NavigationStack {
+        InsightsView(entitlements: MockEntitlementService(isPro: false))
     }
     .modelContainer(PreviewData.container(populated: true))
 }
 
 #Preview("Empty") {
     NavigationStack {
-        InsightsView()
+        InsightsView(entitlements: MockEntitlementService(isPro: true))
     }
     .modelContainer(PreviewData.container(populated: false))
 }
@@ -399,7 +462,7 @@ struct InsightsView: View {
         startDate: .now, expirationDate: .now.addingTimeInterval(86_400 * 10)
     ))
     return NavigationStack {
-        InsightsView()
+        InsightsView(entitlements: MockEntitlementService(isPro: true))
     }
     .modelContainer(container)
     .defaultAppStorage(UserDefaults(suiteName: "insights-preview") ?? .standard)

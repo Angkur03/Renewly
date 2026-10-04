@@ -49,7 +49,7 @@ struct DeveloperToolsView: View {
             } header: {
                 Text("Subscription")
             } footer: {
-                Text("On: unlimited reminders and Pro status everywhere, without StoreKit. Off: the free plan returns, so only the \(NotificationManager.freeAlertLimit) soonest reminders stay on.")
+                Text("On: every Pro feature (unlimited reminders, extra reminder times, insights, PDF export) without StoreKit. Off: the free plan returns, so only the \(NotificationManager.freeAlertLimit) soonest items keep their 3-day reminder.")
             }
 
             Section {

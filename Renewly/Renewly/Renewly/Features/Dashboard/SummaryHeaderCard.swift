@@ -11,6 +11,7 @@ import SwiftUI
 struct SummaryHeaderCard: View {
     let summary: DashboardSummary
     var showsInsightsHint = false
+    var isInsightsLocked = false
 
     var body: some View {
         GlassCard(cornerRadius: 28) {
@@ -23,6 +24,12 @@ struct SummaryHeaderCard: View {
                             .foregroundStyle(.secondary)
                             .textCase(.uppercase)
                         Spacer()
+                        if isInsightsLocked {
+                            Image(systemName: "crown.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.yellow)
+                                .accessibilityLabel("Pro")
+                        }
                         Label("Insights", systemImage: "chevron.right")
                             .labelStyle(TrailingIconLabelStyle())
                             .appFont(.caption)
