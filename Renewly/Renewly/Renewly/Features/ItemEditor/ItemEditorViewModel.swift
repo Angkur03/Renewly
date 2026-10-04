@@ -67,6 +67,7 @@ final class ItemEditorViewModel {
 
     init(
         item: TrackedItem?,
+        category newItemCategory: ItemCategory = .subscription,
         defaultCurrency: String,
         dependencies: AppDependencies,
         now: Date = .now,
@@ -80,7 +81,7 @@ final class ItemEditorViewModel {
         self.calendar = calendar
         hasEditedExpiration = item != nil
         itemID = item?.id ?? UUID()
-        category = item?.category ?? .subscription
+        category = item?.category ?? newItemCategory
         title = item?.title ?? ""
         cost = item?.cost ?? 0
         currencyCode = item?.currencyCode ?? defaultCurrency
@@ -94,6 +95,9 @@ final class ItemEditorViewModel {
         cancellationURL = item?.cancellationURL ?? ""
         isNotificationEnabled = item?.isNotificationEnabled ?? false
         isFreeTrial = item?.isInTrial(calendar: calendar) ?? false
+        if item == nil {
+            expirationDate = suggestedExpirationDate
+        }
     }
 
     var isEditing: Bool { item != nil }

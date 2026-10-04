@@ -6,10 +6,12 @@
 // Copyright © 2026. All rights reserved.
 //
 
+import AppIntents
 import SwiftData
 import SwiftUI
 
-/// Republishes the widget snapshot whenever an item that widgets show is added, edited, rolled over or deleted.
+/// Republishes the widget snapshot, and refreshes the item names Siri recognises, whenever an upcoming item
+/// is added, edited, rolled over or deleted.
 struct WidgetSnapshotSync: View {
     let publisher: any WidgetPublishing
 
@@ -21,6 +23,7 @@ struct WidgetSnapshotSync: View {
             .accessibilityHidden(true)
             .task(id: snapshot.items) {
                 await publisher.publish(snapshot)
+                RenewlyShortcuts.updateAppShortcutParameters()
             }
     }
 }

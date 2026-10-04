@@ -20,7 +20,7 @@ struct RenewlyApp: App {
     private let dependencies: AppDependencies
 
     init() {
-        let storage = Self.makeModelContainer()
+        let storage = SharedModelContainer.shared
         modelContainer = storage.container
         isUsingTemporaryStorage = storage.isTemporary
         dependencies = .live()
@@ -54,10 +54,15 @@ struct RenewlyApp: App {
         }
         .modelContainer(modelContainer)
     }
+}
+
+/// One container per process, shared by the UI and App Intents, which iOS may run before any scene exists.
+nonisolated enum SharedModelContainer {
+    static let shared: (container: ModelContainer, isTemporary: Bool) = make()
 
     /// Falls back to an in-memory store so the app stays usable if the on-disk store cannot open.
     /// The on-disk store is left untouched in that case, so a fixed update can still open it.
-    private static func makeModelContainer() -> (container: ModelContainer, isTemporary: Bool) {
+    private static func make() -> (container: ModelContainer, isTemporary: Bool) {
         do {
             return (try RenewlyStore.makeContainer(), false)
         } catch {

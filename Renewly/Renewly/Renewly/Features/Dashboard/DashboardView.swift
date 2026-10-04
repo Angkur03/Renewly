@@ -10,8 +10,15 @@ import SwiftData
 import SwiftUI
 
 enum EditorTarget: Identifiable {
-    case new
+    case new(ItemCategory = .subscription)
     case edit(TrackedItem)
+
+    var newItemCategory: ItemCategory {
+        switch self {
+        case .new(let category): category
+        case .edit(let item): item.category
+        }
+    }
 
     var id: String {
         switch self {
@@ -33,6 +40,8 @@ struct DashboardView: View {
     let isUsingTemporaryStorage: Bool
     /// Shows the read-only detail page (receipt, PDF export) for an item.
     let onOpenDetails: (TrackedItem) -> Void
+    /// Set from outside (e.g. Siri) to open the editor for a new item.
+    @Binding var newItemRequest: ItemCategory?
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
@@ -49,11 +58,13 @@ struct DashboardView: View {
     init(
         dependencies: AppDependencies,
         isUsingTemporaryStorage: Bool,
-        onOpenDetails: @escaping (TrackedItem) -> Void = { _ in }
+        onOpenDetails: @escaping (TrackedItem) -> Void = { _ in },
+        newItemRequest: Binding<ItemCategory?> = .constant(nil)
     ) {
         self.dependencies = dependencies
         self.isUsingTemporaryStorage = isUsingTemporaryStorage
         self.onOpenDetails = onOpenDetails
+        _newItemRequest = newItemRequest
         _viewModel = State(initialValue: DashboardViewModel(dependencies: dependencies))
     }
 
@@ -139,7 +150,7 @@ struct DashboardView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     viewModel.registerInteraction()
-                    editorTarget = .new
+                    editorTarget = .new()
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.title3)
@@ -148,12 +159,22 @@ struct DashboardView: View {
             }
         }
         .sheet(item: $editorTarget) { target in
-            ItemEditorView(item: target.item, defaultCurrency: primaryCurrency, dependencies: dependencies)
+            ItemEditorView(
+                item: target.item,
+                category: target.newItemCategory,
+                defaultCurrency: primaryCurrency,
+                dependencies: dependencies
+            )
+        }
+        .onChange(of: newItemRequest, initial: true) { _, category in
+            guard let category else { return }
+            newItemRequest = nil
+            editorTarget = .new(category)
         }
         #if DEBUG
         .task {
             if UserDefaults.standard.string(forKey: "open_route") == "new_item" {
-                editorTarget = .new
+                editorTarget = .new()
             }
         }
         #endif
@@ -263,7 +284,7 @@ struct DashboardView: View {
             if items.isEmpty {
                 Button("Add your first item") {
                     viewModel.registerInteraction()
-                    editorTarget = .new
+                    editorTarget = .new()
                 }
                 .buttonStyle(.borderedProminent)
                 .padding(.top, 4)

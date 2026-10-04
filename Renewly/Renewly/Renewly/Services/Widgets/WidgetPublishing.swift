@@ -25,7 +25,7 @@ nonisolated enum WidgetSnapshotBuilder {
         return WidgetSnapshot(generatedAt: now, items: Array(upcoming))
     }
 
-    private static func kind(of item: ItemSnapshot, calendar: Calendar) -> WidgetSnapshot.Kind {
+    static func kind(of item: ItemSnapshot, calendar: Calendar) -> WidgetSnapshot.Kind {
         if item.isInTrial(calendar: calendar) { return .trial }
         return item.category == .subscription ? .subscription : .warranty
     }

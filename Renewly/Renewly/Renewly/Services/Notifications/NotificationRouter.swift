@@ -9,12 +9,16 @@
 import Foundation
 import Observation
 
-/// Hands the item behind a tapped notification from the notification-center delegate to the UI.
-/// Taps can arrive before the UI exists (cold launch), so the request waits here until `RootView` consumes it.
+/// Hands navigation requests from outside the UI (tapped notifications, widgets, Siri and Shortcuts) to `RootView`.
+/// Requests can arrive before the UI exists (cold launch), so each one waits here until it is consumed.
 @Observable
 @MainActor
 final class NotificationRouter {
+    /// The app's single inbox. App Intents run without access to the SwiftUI hierarchy, so they reach it here.
+    static let shared = NotificationRouter()
+
     private(set) var pendingItemID: UUID?
+    private(set) var pendingNewItem: ItemCategory?
 
     func open(itemID: UUID) {
         pendingItemID = itemID
@@ -24,5 +28,14 @@ final class NotificationRouter {
     func consume() -> UUID? {
         defer { pendingItemID = nil }
         return pendingItemID
+    }
+
+    func requestNewItem(_ category: ItemCategory) {
+        pendingNewItem = category
+    }
+
+    func consumeNewItemRequest() -> ItemCategory? {
+        defer { pendingNewItem = nil }
+        return pendingNewItem
     }
 }

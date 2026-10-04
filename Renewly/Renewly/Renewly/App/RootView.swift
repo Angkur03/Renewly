@@ -30,6 +30,7 @@ struct RootView: View {
     @State private var hasLoadedEntitlements = false
     @State private var foregroundCount = 0
     @State private var path = NavigationPath()
+    @State private var newItemRequest: ItemCategory?
 
     private var reminderSyncKey: String {
         "\(hasLoadedEntitlements)-\(dependencies.entitlements.isPro)-\(remindersEnabled)-\(reminderOffsetsRaw)-\(foregroundCount)"
@@ -40,7 +41,8 @@ struct RootView: View {
             DashboardView(
                 dependencies: dependencies,
                 isUsingTemporaryStorage: isUsingTemporaryStorage,
-                onOpenDetails: { path.append($0) }
+                onOpenDetails: { path.append($0) },
+                newItemRequest: $newItemRequest
             )
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
@@ -67,6 +69,11 @@ struct RootView: View {
         }
         .onChange(of: notificationRouter.pendingItemID, initial: true) {
             openItemFromNotification()
+        }
+        .onChange(of: notificationRouter.pendingNewItem, initial: true) {
+            guard let category = notificationRouter.consumeNewItemRequest() else { return }
+            path = NavigationPath()
+            newItemRequest = category
         }
         .task {
             await dependencies.entitlements.observeTransactionUpdates()

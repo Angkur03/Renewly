@@ -22,9 +22,14 @@ struct ItemEditorView: View {
     @State private var saveTrigger = 0
     @State private var isServicePickerPresented = false
 
-    init(item: TrackedItem?, defaultCurrency: String, dependencies: AppDependencies) {
+    init(item: TrackedItem?, category: ItemCategory = .subscription, defaultCurrency: String, dependencies: AppDependencies) {
         self.dependencies = dependencies
-        _viewModel = State(initialValue: ItemEditorViewModel(item: item, defaultCurrency: defaultCurrency, dependencies: dependencies))
+        _viewModel = State(initialValue: ItemEditorViewModel(
+            item: item,
+            category: category,
+            defaultCurrency: defaultCurrency,
+            dependencies: dependencies
+        ))
     }
 
     private var activeAlertItemIDs: Set<UUID> {
