@@ -148,10 +148,20 @@ struct DashboardSectionsTests {
         #expect(counts[.expiringSoon] == 1)
     }
 
-    @Test("Next up is the soonest item that has not expired")
+    @Test("Next up shows the soonest renewal and the soonest unexpired warranty separately")
     func nextUp() {
         let summary = DashboardSummary.make(from: items.map(\.snapshot), currencyCode: "USD", now: .now)
-        #expect(summary.nextUp?.title == "MacBook Pro")
-        #expect(summary.nextUp?.daysLeft == 5)
+        #expect(summary.nextRenewal?.title == "Netflix")
+        #expect(summary.nextRenewal?.daysLeft == 20)
+        #expect(summary.nextWarranty?.title == "MacBook Pro")
+        #expect(summary.nextWarranty?.daysLeft == 5)
+    }
+
+    @Test("A category with nothing upcoming has no next-up row")
+    func nextUpWithoutUpcomingWarranty() {
+        let subscriptionsAndExpired = items.filter { $0.title != "MacBook Pro" }.map(\.snapshot)
+        let summary = DashboardSummary.make(from: subscriptionsAndExpired, currencyCode: "USD", now: .now)
+        #expect(summary.nextRenewal?.title == "Netflix")
+        #expect(summary.nextWarranty == nil)
     }
 }

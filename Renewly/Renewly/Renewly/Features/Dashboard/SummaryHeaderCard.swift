@@ -57,8 +57,15 @@ struct SummaryHeaderCard: View {
                     )
                 }
 
-                if let nextUp = summary.nextUp {
-                    nextUpRow(nextUp)
+                if summary.nextRenewal != nil || summary.nextWarranty != nil {
+                    VStack(spacing: 8) {
+                        if let renewal = summary.nextRenewal {
+                            nextUpRow(renewal)
+                        }
+                        if let warranty = summary.nextWarranty {
+                            nextUpRow(warranty)
+                        }
+                    }
                 }
 
                 if summary.excludedItemCount > 0 {
@@ -77,13 +84,16 @@ struct SummaryHeaderCard: View {
 
     private func nextUpRow(_ nextUp: DashboardSummary.NextUp) -> some View {
         let isUrgent = nextUp.daysLeft <= 3
+        let isWarranty = nextUp.category == .warranty
+        let tint: Color = isUrgent ? .orange : (isWarranty ? .green : .accentColor)
+        let icon = isUrgent ? "bell.badge.fill" : (isWarranty ? "checkmark.shield.fill" : "arrow.triangle.2.circlepath")
         return HStack(spacing: 10) {
-            Image(systemName: isUrgent ? "bell.badge.fill" : "calendar")
-                .foregroundStyle(isUrgent ? Color.orange : Color.accentColor)
+            Image(systemName: icon)
+                .foregroundStyle(tint)
                 .frame(width: 28, height: 28)
-                .background((isUrgent ? Color.orange : Color.accentColor).opacity(0.15), in: Circle())
+                .background(tint.opacity(0.15), in: Circle())
             VStack(alignment: .leading, spacing: 1) {
-                Text("Next up")
+                Text(isWarranty ? "Next warranty expiry" : "Next renewal")
                     .appFont(.caption)
                     .foregroundStyle(.secondary)
                 Text(nextUp.title)
@@ -145,7 +155,8 @@ private struct TrailingIconLabelStyle: LabelStyle {
                 subscriptionCount: 2,
                 activeWarrantyCount: 1,
                 excludedItemCount: 1,
-                nextUp: .init(title: "Netflix", category: .subscription, daysLeft: 2)
+                nextRenewal: .init(title: "Netflix", category: .subscription, daysLeft: 2),
+                nextWarranty: .init(title: "MacBook Pro", category: .warranty, daysLeft: 45)
             )
         )
         .padding()

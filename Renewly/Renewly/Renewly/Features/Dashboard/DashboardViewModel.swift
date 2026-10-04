@@ -51,8 +51,10 @@ nonisolated struct DashboardSummary: Equatable, Sendable {
     let activeWarrantyCount: Int
     /// Items in other currencies, left out of the totals because there is no exchange-rate source.
     let excludedItemCount: Int
-    /// The soonest upcoming renewal or expiry across all currencies.
-    var nextUp: NextUp? = nil
+    /// The soonest upcoming subscription renewal, across all currencies.
+    var nextRenewal: NextUp? = nil
+    /// The soonest warranty that has not expired yet, across all currencies.
+    var nextWarranty: NextUp? = nil
 
     static func make(
         from items: [ItemSnapshot],
@@ -65,9 +67,13 @@ nonisolated struct DashboardSummary: Equatable, Sendable {
         let activeWarranties = matching.filter {
             $0.category == .warranty && !$0.isExpired(now: now, calendar: calendar)
         }
-        let soonest = items
-            .filter { !$0.isExpired(now: now, calendar: calendar) }
-            .min { $0.expirationDate < $1.expirationDate }
+        let upcoming = items.filter { !$0.isExpired(now: now, calendar: calendar) }
+        func soonest(_ category: ItemCategory) -> NextUp? {
+            upcoming
+                .filter { $0.category == category }
+                .min { $0.expirationDate < $1.expirationDate }
+                .map { NextUp(title: $0.title, category: category, daysLeft: $0.daysUntilExpiration(from: now, calendar: calendar)) }
+        }
         return DashboardSummary(
             currencyCode: currencyCode,
             monthlyBurn: subscriptions.reduce(0) { $0 + $1.monthlyCost },
@@ -75,9 +81,8 @@ nonisolated struct DashboardSummary: Equatable, Sendable {
             subscriptionCount: subscriptions.count,
             activeWarrantyCount: activeWarranties.count,
             excludedItemCount: items.count - matching.count,
-            nextUp: soonest.map {
-                NextUp(title: $0.title, category: $0.category, daysLeft: $0.daysUntilExpiration(from: now, calendar: calendar))
-            }
+            nextRenewal: soonest(.subscription),
+            nextWarranty: soonest(.warranty)
         )
     }
 }
