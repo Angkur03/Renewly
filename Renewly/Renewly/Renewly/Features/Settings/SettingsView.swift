@@ -19,7 +19,10 @@ struct SettingsView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var viewModel: SettingsViewModel
 
+    private let dependencies: AppDependencies
+
     init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
         _viewModel = State(initialValue: SettingsViewModel(
             entitlements: dependencies.entitlements,
             notifications: dependencies.notifications
@@ -55,6 +58,8 @@ struct SettingsView: View {
             } footer: {
                 Text("Dashboard totals include only items priced in this currency.")
             }
+
+            BackupSection(dependencies: dependencies)
 
             Section("Purchases") {
                 Button {
