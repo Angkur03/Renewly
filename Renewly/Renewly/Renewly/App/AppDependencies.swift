@@ -28,13 +28,29 @@ struct AppDependencies {
     let notifications: any NotificationScheduling
     let receipts: any ReceiptImageStoring
     let pdfExporter: any ReceiptPDFExporting
+    let textRecognizer: any ReceiptTextRecognizing
+
+    init(
+        entitlements: any EntitlementProviding,
+        notifications: any NotificationScheduling,
+        receipts: any ReceiptImageStoring,
+        pdfExporter: any ReceiptPDFExporting,
+        textRecognizer: any ReceiptTextRecognizing = VisionReceiptTextRecognizer()
+    ) {
+        self.entitlements = entitlements
+        self.notifications = notifications
+        self.receipts = receipts
+        self.pdfExporter = pdfExporter
+        self.textRecognizer = textRecognizer
+    }
 
     static func live() -> AppDependencies {
         AppDependencies(
             entitlements: StoreKitEntitlementService(),
             notifications: NotificationManager(),
             receipts: ReceiptImageStore(),
-            pdfExporter: ReceiptPDFExporter()
+            pdfExporter: ReceiptPDFExporter(),
+            textRecognizer: VisionReceiptTextRecognizer()
         )
     }
 }

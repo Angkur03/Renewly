@@ -12,7 +12,9 @@ import UIKit
 
 struct ReceiptPickerView: View {
     let previewData: Data?
+    var isScanning = false
     let onPick: (Data) -> Void
+    var onScan: (() -> Void)?
     let onRemove: () -> Void
 
     @State private var pickerItem: PhotosPickerItem?
@@ -43,6 +45,14 @@ struct ReceiptPickerView: View {
 
                 if previewData != nil {
                     Spacer()
+                    if let onScan {
+                        Button(action: onScan) {
+                            Image(systemName: "text.viewfinder")
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(isScanning)
+                        .accessibilityLabel("Scan receipt text")
+                    }
                     Button(role: .destructive, action: onRemove) {
                         Image(systemName: "trash")
                     }
@@ -80,6 +90,11 @@ struct ReceiptPickerView: View {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
                 )
+                .overlay {
+                    if isScanning {
+                        scanningOverlay
+                    }
+                }
                 .accessibilityLabel("Receipt preview")
         } else {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -91,10 +106,28 @@ struct ReceiptPickerView: View {
                             .font(.title)
                         Text("Attach a receipt or warranty card")
                             .appFont(.footnote)
+                        Text("Details are read from the photo on your device")
+                            .appFont(.caption2)
                     }
+                    .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                 }
         }
+    }
+
+    private var scanningOverlay: some View {
+        RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .fill(.ultraThinMaterial)
+            .overlay {
+                VStack(spacing: 8) {
+                    ProgressView()
+                    Text("Reading receipt…")
+                        .appFont(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Reading receipt")
     }
 
     private func loadPickedPhoto() async {
@@ -156,10 +189,28 @@ struct CameraPicker: UIViewControllerRepresentable {
     }
 }
 
-#Preview {
+#Preview("Empty") {
     Form {
         Section("Receipt") {
             ReceiptPickerView(previewData: nil, onPick: { _ in }, onRemove: {})
+        }
+    }
+}
+
+#Preview("Scanning") {
+    let image = UIGraphicsImageRenderer(size: CGSize(width: 300, height: 200)).image { context in
+        UIColor.systemGray5.setFill()
+        context.fill(CGRect(x: 0, y: 0, width: 300, height: 200))
+    }
+    Form {
+        Section("Receipt") {
+            ReceiptPickerView(
+                previewData: image.pngData(),
+                isScanning: true,
+                onPick: { _ in },
+                onScan: {},
+                onRemove: {}
+            )
         }
     }
 }

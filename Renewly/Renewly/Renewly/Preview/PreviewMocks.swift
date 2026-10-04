@@ -115,18 +115,49 @@ actor InMemoryReceiptStore: ReceiptImageStoring {
     }
 }
 
+/// Returns fixed OCR lines (or an error) instead of running Vision.
+nonisolated struct MockTextRecognizer: ReceiptTextRecognizing {
+    static let sampleReceipt = [
+        "APPLE STORE",
+        "Fifth Avenue, New York",
+        "Date: 03/14/2026",
+        "AirPods Pro (2nd gen)",
+        "Serial No: GX7KL2MQ9P",
+        "1 Year Limited Warranty",
+        "Subtotal 249.00",
+        "Tax 22.10",
+        "TOTAL $271.10"
+    ]
+
+    let result: Result<[String], ReceiptScanError>
+
+    init(lines: [String] = MockTextRecognizer.sampleReceipt) {
+        result = .success(lines)
+    }
+
+    init(error: ReceiptScanError) {
+        result = .failure(error)
+    }
+
+    func recognizeLines(in imageData: Data) async throws(ReceiptScanError) -> [String] {
+        try result.get()
+    }
+}
+
 @MainActor
 enum PreviewData {
     static func dependencies(
         isPro: Bool = false,
         notificationsAuthorized: Bool = true,
-        purchaseError: PurchaseError? = nil
+        purchaseError: PurchaseError? = nil,
+        textRecognizer: any ReceiptTextRecognizing = MockTextRecognizer()
     ) -> AppDependencies {
         AppDependencies(
             entitlements: MockEntitlementService(isPro: isPro, purchaseError: purchaseError),
             notifications: MockNotificationScheduler(isAuthorized: notificationsAuthorized),
             receipts: InMemoryReceiptStore(),
-            pdfExporter: ReceiptPDFExporter()
+            pdfExporter: ReceiptPDFExporter(),
+            textRecognizer: textRecognizer
         )
     }
 

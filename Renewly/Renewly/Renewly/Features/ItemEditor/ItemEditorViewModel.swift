@@ -42,10 +42,14 @@ final class ItemEditorViewModel {
 
     private(set) var receiptPreviewData: Data?
     private(set) var isSaving = false
+    private(set) var isScanning = false
+    private(set) var scanMessage: String?
 
     let itemID: UUID
 
     @ObservationIgnored private var item: TrackedItem?
+    /// Bumped for every scan so a slow result never overwrites a newer photo (or a removed one).
+    @ObservationIgnored private var scanGeneration = 0
     @ObservationIgnored private var pendingReceiptData: Data?
     @ObservationIgnored private var shouldRemoveExistingReceipt = false
     @ObservationIgnored private var didApplyDefaultReminder = false
@@ -171,6 +175,118 @@ final class ItemEditorViewModel {
         pendingReceiptData = nil
         receiptPreviewData = nil
         shouldRemoveExistingReceipt = item?.receiptImagePath != nil
+        scanGeneration += 1
+        isScanning = false
+        scanMessage = nil
+    }
+
+    // MARK: Receipt scanning
+
+    /// Attaches the photo, then reads it and fills in whatever the user has not entered yet.
+    func receiptPicked(_ data: Data) async {
+        setReceipt(data)
+        await scanReceipt(data)
+    }
+
+    /// Re-reads the attached photo, e.g. an existing receipt when editing.
+    func scanAttachedReceipt() async {
+        guard let receiptPreviewData else { return }
+        await scanReceipt(receiptPreviewData)
+    }
+
+    private func scanReceipt(_ data: Data) async {
+        scanGeneration += 1
+        let generation = scanGeneration
+        isScanning = true
+        scanMessage = nil
+
+        let lines: [String]
+        do {
+            lines = try await dependencies.textRecognizer.recognizeLines(in: data)
+        } catch {
+            guard generation == scanGeneration else { return }
+            isScanning = false
+            if error != .cancelled {
+                scanMessage = error.userMessage
+            }
+            return
+        }
+        guard generation == scanGeneration else { return }
+        isScanning = false
+
+        let scan = ReceiptParser.parse(lines: lines, defaultCurrency: currencyCode, now: now, calendar: calendar)
+        let filled = applyScan(scan)
+        if !filled.isEmpty {
+            scanMessage = "Filled in \(filled.formatted(.list(type: .and))) from the photo. Check them before saving."
+        } else if scan.isEmpty {
+            scanMessage = "No details could be read from this photo. You can fill them in yourself."
+        } else {
+            scanMessage = "Your details were kept. Nothing new was found on the photo."
+        }
+    }
+
+    /// Fills only fields that are still empty or at their defaults, so a scan never overwrites what the user typed.
+    /// Returns the names of the fields that changed.
+    @discardableResult
+    func applyScan(_ scan: ReceiptScan) -> [String] {
+        var filled: [String] = []
+        let isBlankNewItem = !isEditing && trimmedTitle.isEmpty && cost == 0
+
+        if isBlankNewItem, let suggested = scan.suggestedCategory, suggested != category {
+            category = suggested
+            filled.append("type")
+        }
+
+        if let merchant = scan.merchant.flatMap({ Self.sanitized($0, maxLength: Self.maxTitleLength) }) {
+            if trimmedTitle.isEmpty {
+                title = merchant
+                filled.append("name")
+            }
+            if category == .warranty, Self.sanitized(retailer, maxLength: Self.maxFieldLength) == nil {
+                retailer = String(merchant.prefix(Self.maxFieldLength))
+                filled.append("retailer")
+            }
+        }
+
+        if cost == 0, let total = scan.total, total > 0, total <= Self.maxCost {
+            cost = total
+            filled.append("price")
+            if let code = scan.currencyCode, code != currencyCode, CurrencyCatalog.shared.contains(code) {
+                currencyCode = code
+                filled.append("currency")
+            }
+        }
+
+        if !isEditing, category == .subscription, let cycle = scan.billingCycle, cycle != billingCycle {
+            billingCycle = cycle
+            filled.append("billing cycle")
+        }
+
+        if !isEditing, let purchaseDate = scan.purchaseDate,
+           !calendar.isDate(purchaseDate, inSameDayAs: startDate) {
+            startDate = purchaseDate
+            filled.append(category.startLabel.lowercased())
+        }
+
+        if category == .warranty, Self.sanitized(serialNumber, maxLength: Self.maxFieldLength) == nil,
+           let serial = scan.serialNumber {
+            serialNumber = String(serial.prefix(Self.maxFieldLength))
+            filled.append("serial number")
+        }
+
+        if !hasEditedExpiration, let expiration = scannedExpiration(from: scan), expiration >= startDate {
+            setExpirationDate(expiration)
+            filled.append(category.expirationLabel.lowercased())
+        }
+
+        return filled
+    }
+
+    private func scannedExpiration(from scan: ReceiptScan) -> Date? {
+        if category == .warranty, let months = scan.warrantyMonths {
+            return calendar.date(byAdding: .month, value: months, to: startDate)
+        }
+        return scan.renewalDate
     }
 
     /// New items start with reminders on whenever the plan's quota allows it.

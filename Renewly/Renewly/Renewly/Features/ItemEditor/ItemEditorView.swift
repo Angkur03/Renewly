@@ -67,12 +67,24 @@ struct ItemEditorView: View {
                     warrantySection(viewModel: viewModel)
                 }
 
-                Section("Receipt") {
+                Section {
                     ReceiptPickerView(
                         previewData: viewModel.receiptPreviewData,
-                        onPick: { viewModel.setReceipt($0) },
+                        isScanning: viewModel.isScanning,
+                        onPick: { data in
+                            Task { await viewModel.receiptPicked(data) }
+                        },
+                        onScan: {
+                            Task { await viewModel.scanAttachedReceipt() }
+                        },
                         onRemove: { viewModel.removeReceipt() }
                     )
+                } header: {
+                    Text("Receipt")
+                } footer: {
+                    if let message = viewModel.scanMessage {
+                        Label(message, systemImage: "text.viewfinder")
+                    }
                 }
 
                 Section {
