@@ -115,6 +115,15 @@ actor InMemoryReceiptStore: ReceiptImageStoring {
     }
 }
 
+/// Keeps published snapshots in memory instead of writing to the App Group.
+actor MockWidgetPublisher: WidgetPublishing {
+    private(set) var published: [WidgetSnapshot] = []
+
+    func publish(_ snapshot: WidgetSnapshot) async {
+        published.append(snapshot)
+    }
+}
+
 /// Returns fixed OCR lines (or an error) instead of running Vision.
 nonisolated struct MockTextRecognizer: ReceiptTextRecognizing {
     static let sampleReceipt = [
@@ -157,7 +166,8 @@ enum PreviewData {
             notifications: MockNotificationScheduler(isAuthorized: notificationsAuthorized),
             receipts: InMemoryReceiptStore(),
             pdfExporter: ReceiptPDFExporter(),
-            textRecognizer: textRecognizer
+            textRecognizer: textRecognizer,
+            widgets: MockWidgetPublisher()
         )
     }
 

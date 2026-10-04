@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AEBD3A0E30721F8200A99A6C /* RenewlyWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AEBD3A0130721F8200A99A6C /* RenewlyWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		AEBD2C0830721F8200A99A6C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -14,11 +18,33 @@
 			remoteGlobalIDString = AEBD2B3430721F8200A99A6C;
 			remoteInfo = Renewly;
 		};
+		AEBD3A0C30721F8200A99A6C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AEBD2B2D30721F8200A99A6C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AEBD3A0830721F8200A99A6C;
+			remoteInfo = RenewlyWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AEBD3A0F30721F8200A99A6C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AEBD3A0E30721F8200A99A6C /* RenewlyWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		AEBD2B3530721F8200A99A6C /* Renewly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Renewly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEBD2C0130721F8200A99A6C /* RenewlyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RenewlyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEBD3A0130721F8200A99A6C /* RenewlyWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RenewlyWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -26,8 +52,17 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Renewly.entitlements,
 			);
 			target = AEBD2B3430721F8200A99A6C /* Renewly */;
+		};
+		AEBD3A0430721F8200A99A6C /* Exceptions for "RenewlyWidget" folder in "RenewlyWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				RenewlyWidget.entitlements,
+			);
+			target = AEBD3A0830721F8200A99A6C /* RenewlyWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -43,6 +78,19 @@
 		AEBD2C0230721F8200A99A6C /* RenewlyTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = RenewlyTests;
+			sourceTree = "<group>";
+		};
+		AEBD3A0230721F8200A99A6C /* RenewlyWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AEBD3A0430721F8200A99A6C /* Exceptions for "RenewlyWidget" folder in "RenewlyWidgetExtension" target */,
+			);
+			path = RenewlyWidget;
+			sourceTree = "<group>";
+		};
+		AEBD3A0330721F8200A99A6C /* RenewlyShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = RenewlyShared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -62,6 +110,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AEBD3A0630721F8200A99A6C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -69,6 +124,8 @@
 			isa = PBXGroup;
 			children = (
 				AEBD2B3730721F8200A99A6C /* Renewly */,
+				AEBD3A0330721F8200A99A6C /* RenewlyShared */,
+				AEBD3A0230721F8200A99A6C /* RenewlyWidget */,
 				AEBD2C0230721F8200A99A6C /* RenewlyTests */,
 				AEBD2B3630721F8200A99A6C /* Products */,
 			);
@@ -79,6 +136,7 @@
 			children = (
 				AEBD2B3530721F8200A99A6C /* Renewly.app */,
 				AEBD2C0130721F8200A99A6C /* RenewlyTests.xctest */,
+				AEBD3A0130721F8200A99A6C /* RenewlyWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -93,13 +151,16 @@
 				AEBD2B3130721F8200A99A6C /* Sources */,
 				AEBD2B3230721F8200A99A6C /* Frameworks */,
 				AEBD2B3330721F8200A99A6C /* Resources */,
+				AEBD3A0F30721F8200A99A6C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				AEBD3A0D30721F8200A99A6C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AEBD2B3730721F8200A99A6C /* Renewly */,
+				AEBD3A0330721F8200A99A6C /* RenewlyShared */,
 			);
 			name = Renewly;
 			packageProductDependencies = (
@@ -131,6 +192,29 @@
 			productReference = AEBD2C0130721F8200A99A6C /* RenewlyTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		AEBD3A0830721F8200A99A6C /* RenewlyWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AEBD3A0930721F8200A99A6C /* Build configuration list for PBXNativeTarget "RenewlyWidgetExtension" */;
+			buildPhases = (
+				AEBD3A0530721F8200A99A6C /* Sources */,
+				AEBD3A0630721F8200A99A6C /* Frameworks */,
+				AEBD3A0730721F8200A99A6C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AEBD3A0230721F8200A99A6C /* RenewlyWidget */,
+				AEBD3A0330721F8200A99A6C /* RenewlyShared */,
+			);
+			name = RenewlyWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = RenewlyWidgetExtension;
+			productReference = AEBD3A0130721F8200A99A6C /* RenewlyWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -147,6 +231,9 @@
 					AEBD2C0730721F8200A99A6C = {
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = AEBD2B3430721F8200A99A6C;
+					};
+					AEBD3A0830721F8200A99A6C = {
+						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
@@ -166,6 +253,7 @@
 			targets = (
 				AEBD2B3430721F8200A99A6C /* Renewly */,
 				AEBD2C0730721F8200A99A6C /* RenewlyTests */,
+				AEBD3A0830721F8200A99A6C /* RenewlyWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -179,6 +267,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		AEBD2C0630721F8200A99A6C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AEBD3A0730721F8200A99A6C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -202,6 +297,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AEBD3A0530721F8200A99A6C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -209,6 +311,11 @@
 			isa = PBXTargetDependency;
 			target = AEBD2B3430721F8200A99A6C /* Renewly */;
 			targetProxy = AEBD2C0830721F8200A99A6C /* PBXContainerItemProxy */;
+		};
+		AEBD3A0D30721F8200A99A6C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AEBD3A0830721F8200A99A6C /* RenewlyWidgetExtension */;
+			targetProxy = AEBD3A0C30721F8200A99A6C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -339,6 +446,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Renewly/Renewly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4ZSW36PHZL;
@@ -373,6 +481,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Renewly/Renewly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4ZSW36PHZL;
@@ -446,6 +555,66 @@
 			};
 			name = Release;
 		};
+		AEBD3A0A30721F8200A99A6C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = RenewlyWidget/RenewlyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4ZSW36PHZL;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RenewlyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Renewly;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beleiveinAllahRenewly.Renewly.RenewlyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AEBD3A0B30721F8200A99A6C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = RenewlyWidget/RenewlyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4ZSW36PHZL;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RenewlyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Renewly;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beleiveinAllahRenewly.Renewly.RenewlyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -472,6 +641,15 @@
 			buildConfigurations = (
 				AEBD2C0B30721F8200A99A6C /* Debug */,
 				AEBD2C0C30721F8200A99A6C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AEBD3A0930721F8200A99A6C /* Build configuration list for PBXNativeTarget "RenewlyWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AEBD3A0A30721F8200A99A6C /* Debug */,
+				AEBD3A0B30721F8200A99A6C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

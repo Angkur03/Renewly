@@ -58,6 +58,13 @@ struct RootView: View {
                     ItemDetailView(item: item, dependencies: dependencies)
                 }
         }
+        .background {
+            WidgetSnapshotSync(publisher: dependencies.widgets)
+        }
+        .onOpenURL { url in
+            guard let itemID = WidgetDeepLink.itemID(from: url) else { return }
+            notificationRouter.open(itemID: itemID)
+        }
         .onChange(of: notificationRouter.pendingItemID, initial: true) {
             openItemFromNotification()
         }

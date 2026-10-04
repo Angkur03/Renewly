@@ -29,19 +29,22 @@ struct AppDependencies {
     let receipts: any ReceiptImageStoring
     let pdfExporter: any ReceiptPDFExporting
     let textRecognizer: any ReceiptTextRecognizing
+    let widgets: any WidgetPublishing
 
     init(
         entitlements: any EntitlementProviding,
         notifications: any NotificationScheduling,
         receipts: any ReceiptImageStoring,
         pdfExporter: any ReceiptPDFExporting,
-        textRecognizer: any ReceiptTextRecognizing = VisionReceiptTextRecognizer()
+        textRecognizer: any ReceiptTextRecognizing = VisionReceiptTextRecognizer(),
+        widgets: any WidgetPublishing = LiveWidgetPublisher()
     ) {
         self.entitlements = entitlements
         self.notifications = notifications
         self.receipts = receipts
         self.pdfExporter = pdfExporter
         self.textRecognizer = textRecognizer
+        self.widgets = widgets
     }
 
     static func live() -> AppDependencies {
@@ -50,7 +53,8 @@ struct AppDependencies {
             notifications: NotificationManager(),
             receipts: ReceiptImageStore(),
             pdfExporter: ReceiptPDFExporter(),
-            textRecognizer: VisionReceiptTextRecognizer()
+            textRecognizer: VisionReceiptTextRecognizer(),
+            widgets: LiveWidgetPublisher()
         )
     }
 }
