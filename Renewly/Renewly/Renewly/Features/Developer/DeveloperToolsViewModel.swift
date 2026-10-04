@@ -33,6 +33,18 @@ final class DeveloperToolsViewModel {
 
     var isPro: Bool { dependencies.entitlements.isPro }
 
+    var isProOverrideEnabled: Bool {
+        get { dependencies.entitlements.isDebugProOverrideEnabled }
+        set { dependencies.entitlements.isDebugProOverrideEnabled = newValue }
+    }
+
+    var subscriptionStatusText: String {
+        if dependencies.entitlements.activeSubscription != nil {
+            return "A real subscription is active, so Pro stays on either way."
+        }
+        return isPro ? "All premium features are unlocked." : "Free plan limits apply."
+    }
+
     func alertUsageText(for items: [TrackedItem]) -> String {
         let used = items.filter(\.isNotificationEnabled).count
         return isPro ? "\(used) (unlimited)" : "\(used) of \(NotificationManager.freeAlertLimit)"

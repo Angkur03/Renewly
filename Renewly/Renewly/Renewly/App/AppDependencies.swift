@@ -10,10 +10,10 @@ import Foundation
 
 nonisolated enum AppStorageKey {
     static let theme = "app_theme"
-    static let font = "app_font"
     static let primaryCurrency = "primary_currency"
     static let remindersEnabled = "reminders_enabled"
     static let reminderOffsets = "reminder_offsets"
+    static let debugProOverride = "debug_pro_override"
 }
 
 nonisolated enum CurrencyDefaults {

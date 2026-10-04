@@ -8,7 +8,6 @@
 
 import Foundation
 import Observation
-import OSLog
 import SwiftData
 
 nonisolated enum DashboardFilter: String, CaseIterable, Identifiable, Sendable {
@@ -39,6 +38,12 @@ nonisolated enum DashboardFilter: String, CaseIterable, Identifiable, Sendable {
 }
 
 nonisolated struct DashboardSummary: Equatable, Sendable {
+    nonisolated struct NextUp: Equatable, Sendable {
+        let title: String
+        let category: ItemCategory
+        let daysLeft: Int
+    }
+
     let currencyCode: String
     let monthlyBurn: Double
     let protectedCapital: Double
@@ -46,6 +51,8 @@ nonisolated struct DashboardSummary: Equatable, Sendable {
     let activeWarrantyCount: Int
     /// Items in other currencies, left out of the totals because there is no exchange-rate source.
     let excludedItemCount: Int
+    /// The soonest upcoming renewal or expiry across all currencies.
+    var nextUp: NextUp? = nil
 
     static func make(
         from items: [ItemSnapshot],
@@ -58,15 +65,30 @@ nonisolated struct DashboardSummary: Equatable, Sendable {
         let activeWarranties = matching.filter {
             $0.category == .warranty && !$0.isExpired(now: now, calendar: calendar)
         }
+        let soonest = items
+            .filter { !$0.isExpired(now: now, calendar: calendar) }
+            .min { $0.expirationDate < $1.expirationDate }
         return DashboardSummary(
             currencyCode: currencyCode,
             monthlyBurn: subscriptions.reduce(0) { $0 + $1.monthlyCost },
             protectedCapital: activeWarranties.reduce(0) { $0 + $1.cost },
             subscriptionCount: subscriptions.count,
             activeWarrantyCount: activeWarranties.count,
-            excludedItemCount: items.count - matching.count
+            excludedItemCount: items.count - matching.count,
+            nextUp: soonest.map {
+                NextUp(title: $0.title, category: $0.category, daysLeft: $0.daysUntilExpiration(from: now, calendar: calendar))
+            }
         )
     }
+}
+
+nonisolated struct DashboardSections<Item> {
+    /// Soonest first.
+    let upcoming: [Item]
+    /// Most recently expired first.
+    let expired: [Item]
+
+    var isEmpty: Bool { upcoming.isEmpty && expired.isEmpty }
 }
 
 @Observable
@@ -77,14 +99,39 @@ final class DashboardViewModel {
     private(set) var interactionCount = 0
 
     @ObservationIgnored private let dependencies: AppDependencies
-    @ObservationIgnored private let logger = Logger(subsystem: "com.beleiveinAllahRenewly.Renewly", category: "Dashboard")
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
     }
 
-    func visibleItems(from items: [TrackedItem], now: Date = .now) -> [TrackedItem] {
-        items.filter { filter.matches($0.snapshot, now: now) }
+    func sections(from items: [TrackedItem], query: String, now: Date = .now) -> DashboardSections<TrackedItem> {
+        let matching = items.filter { filter.matches($0.snapshot, now: now) && Self.matchesSearch($0, query: query) }
+        let (expired, upcoming) = matching.reduce(into: ([TrackedItem](), [TrackedItem]())) { result, item in
+            if item.snapshot.isExpired(now: now) {
+                result.0.append(item)
+            } else {
+                result.1.append(item)
+            }
+        }
+        return DashboardSections(
+            upcoming: upcoming.sorted { $0.expirationDate < $1.expirationDate },
+            expired: expired.sorted { $0.expirationDate > $1.expirationDate }
+        )
+    }
+
+    func counts(for items: [TrackedItem], now: Date = .now) -> [DashboardFilter: Int] {
+        let snapshots = items.map(\.snapshot)
+        return Dictionary(uniqueKeysWithValues: DashboardFilter.allCases.map { filter in
+            (filter, snapshots.filter { filter.matches($0, now: now) }.count)
+        })
+    }
+
+    static func matchesSearch(_ item: TrackedItem, query: String) -> Bool {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return true }
+        return [item.title, item.retailer, item.serialNumber, item.category.title]
+            .compactMap { $0 }
+            .contains { $0.localizedStandardContains(trimmed) }
     }
 
     func summary(for items: [TrackedItem], currencyCode: String, now: Date = .now) -> DashboardSummary {
@@ -96,25 +143,10 @@ final class DashboardViewModel {
     }
 
     func delete(_ item: TrackedItem, in context: ModelContext) async {
-        let itemID = item.id
-        let receiptPath = item.receiptImagePath
-
-        context.delete(item)
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
+        guard await ItemDeletionService(dependencies: dependencies).delete(item, in: context) else {
             errorMessage = "The item could not be deleted. Please try again."
             return
         }
         registerInteraction()
-
-        await dependencies.notifications.cancel(for: itemID)
-        guard let receiptPath else { return }
-        do {
-            try await dependencies.receipts.delete(relativePath: receiptPath)
-        } catch {
-            logger.error("Orphaned receipt image could not be removed: \(error.userMessage, privacy: .public)")
-        }
     }
 }

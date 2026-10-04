@@ -103,7 +103,7 @@ struct PaywallView: View {
                     GlassCard {
                         VStack(alignment: .leading, spacing: 16) {
                             feature("bell.badge.fill", title: "Unlimited reminders", detail: "Alerts for every subscription and warranty, not just \(NotificationManager.freeAlertLimit).")
-                            feature("textformat", title: "Boutique fonts", detail: "Clash Display, Satoshi and JetBrains Mono across the app.")
+                            feature("bell.and.waves.left.and.right.fill", title: "Every reminder", detail: "30, 7, 3 and 1 day alerts on all your items, at 9:00 AM.")
                             feature("lock.shield.fill", title: "Still private", detail: "Your data stays on this device. No account needed.")
                         }
                     }
@@ -134,12 +134,11 @@ struct PaywallView: View {
                 .font(.system(size: 52))
                 .foregroundStyle(.yellow.gradient)
                 .padding(20)
-                .background(.ultraThinMaterial, in: Circle())
-                .overlay(Circle().strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+                .cardSurface(cornerRadius: 46)
             Text("Renewly Pro")
-                .vaultFont(.largeTitle)
+                .appFont(.largeTitle)
             Text("Never miss a renewal or a warranty claim again.")
-                .vaultFont(.subheadline)
+                .appFont(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -174,18 +173,18 @@ struct PaywallView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
                         Text(plan.kind.title)
-                            .vaultFont(.headline)
+                            .appFont(.headline)
                         if plan.kind == .yearly, let savings = viewModel.yearlySavingsPercent {
                             BadgeView("Best value · Save \(savings)%", tint: .green)
                         }
                     }
                     if let days = plan.freeTrialDays {
                         Text("\(days)-day free trial, then \(plan.priceWithPeriod)")
-                            .vaultFont(.caption)
+                            .appFont(.caption)
                             .foregroundStyle(.secondary)
                     } else {
                         Text("Billed every \(plan.kind.periodNoun)")
-                            .vaultFont(.caption)
+                            .appFont(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -194,17 +193,19 @@ struct PaywallView: View {
 
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(plan.displayPrice)
-                        .vaultFont(.title3)
+                        .appFont(.title3)
                     Text(plan.pricePerMonthText.map { "\($0)/mo" } ?? "per month")
-                        .vaultFont(.caption2)
+                        .appFont(.caption2)
                         .foregroundStyle(.secondary)
                 }
             }
             .padding(16)
-            .background(.ultraThinMaterial, in: shape)
-            .overlay(
-                shape.strokeBorder(isSelected ? Color.accentColor : Color.white.opacity(0.12), lineWidth: isSelected ? 2 : 1)
-            )
+            .cardSurface(cornerRadius: 20)
+            .overlay {
+                if isSelected {
+                    shape.strokeBorder(Color.accentColor, lineWidth: 2)
+                }
+            }
             .contentShape(shape)
         }
         .buttonStyle(.plain)
@@ -223,7 +224,7 @@ struct PaywallView: View {
                             .tint(.white)
                     } else {
                         Text(viewModel.purchaseButtonTitle)
-                            .vaultFont(.headline)
+                            .appFont(.headline)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -234,7 +235,7 @@ struct PaywallView: View {
             .disabled(viewModel.isProcessing || viewModel.selected == nil)
 
             Text(viewModel.finePrint)
-                .vaultFont(.caption)
+                .appFont(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
@@ -247,7 +248,7 @@ struct PaywallView: View {
                     Link("Terms of Use", destination: termsURL)
                 }
             }
-            .vaultFont(.footnote)
+            .appFont(.footnote)
         }
     }
 
@@ -259,9 +260,9 @@ struct PaywallView: View {
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .vaultFont(.headline)
+                    .appFont(.headline)
                 Text(detail)
-                    .vaultFont(.subheadline)
+                    .appFont(.subheadline)
                     .foregroundStyle(.secondary)
             }
         }

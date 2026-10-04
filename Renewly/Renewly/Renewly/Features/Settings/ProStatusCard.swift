@@ -26,13 +26,13 @@ struct ProStatusCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(title)
-                            .vaultFont(.headline)
+                            .appFont(.headline)
                         if subscription?.isInFreeTrial == true {
                             BadgeView("Trial", tint: .green)
                         }
                     }
                     Text(detail)
-                        .vaultFont(.caption)
+                        .appFont(.caption)
                         .foregroundStyle(.secondary)
                 }
 
@@ -40,11 +40,11 @@ struct ProStatusCard: View {
                 if isPro {
                     Button("Manage", action: onManage)
                         .buttonStyle(.bordered)
-                        .vaultFont(.subheadline)
+                        .appFont(.subheadline)
                 } else {
                     Button("Try free", action: onUpgrade)
                         .buttonStyle(.borderedProminent)
-                        .vaultFont(.subheadline)
+                        .appFont(.subheadline)
                 }
             }
         }
@@ -58,10 +58,10 @@ struct ProStatusCard: View {
 
     private var detail: String {
         guard isPro else {
-            return "Reminders for up to \(NotificationManager.freeAlertLimit) items. Start a 7-day free trial for unlimited reminders and boutique fonts."
+            return "Reminders for up to \(NotificationManager.freeAlertLimit) items. Start a 7-day free trial for unlimited reminders."
         }
         guard let date = subscription?.expirationDate else {
-            return "Unlimited reminders and boutique fonts are unlocked."
+            return "Unlimited reminders are unlocked for every item."
         }
         let formatted = date.formatted(date: .abbreviated, time: .omitted)
         return subscription?.isInFreeTrial == true

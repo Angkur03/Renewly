@@ -31,13 +31,6 @@ final class SettingsViewModel {
     var isProcessing: Bool { entitlements.isProcessing }
     var isSystemPermissionDenied: Bool { authorization == .denied }
 
-    /// Returns `true` when the family may be applied; otherwise presents the paywall.
-    func canSelect(_ family: VaultFontFamily) -> Bool {
-        guard family.requiresPro, !isPro else { return true }
-        isPaywallPresented = true
-        return false
-    }
-
     func refreshAuthorization() async {
         authorization = await notifications.authorizationStatus()
     }

@@ -8,6 +8,7 @@
 
 import Foundation
 import Observation
+import SwiftData
 import UIKit
 
 nonisolated struct ExportedPDF: Identifiable, Hashable, Sendable {
@@ -22,6 +23,7 @@ final class ItemDetailViewModel {
     private(set) var receiptData: Data?
     private(set) var receiptLoadFailed = false
     private(set) var isExporting = false
+    private(set) var isDeleting = false
     var exportedPDF: ExportedPDF?
     var errorMessage: String?
 
@@ -59,6 +61,19 @@ final class ItemDetailViewModel {
         }
     }
 
+    /// Returns `true` once the item is gone, so the caller can leave the screen.
+    func delete(_ item: TrackedItem, in context: ModelContext) async -> Bool {
+        guard !isDeleting else { return false }
+        isDeleting = true
+        defer { isDeleting = false }
+
+        guard await ItemDeletionService(dependencies: dependencies).delete(item, in: context) else {
+            errorMessage = "The item could not be deleted. Please try again."
+            return false
+        }
+        return true
+    }
+
     static func reminderSummary(for item: TrackedItem, reminders: ReminderPreferences) -> String {
         guard reminders.isEnabled else { return "Off in Settings" }
         return item.isNotificationEnabled ? reminders.scheduleDescription : "Off"
@@ -91,12 +106,7 @@ final class ItemDetailViewModel {
         lines.append(.init(label: item.category.expirationLabel, value: item.expirationDate.formatted(longDate)))
 
         let days = item.snapshot.daysUntilExpiration(from: now)
-        let status = switch days {
-        case ..<0: "Expired \(-days) day(s) ago"
-        case 0: "Due today"
-        default: "\(days) day(s) remaining"
-        }
-        lines.append(.init(label: "Status", value: status))
+        lines.append(.init(label: "Status", value: ExpiryText.relative(days: days, category: item.category)))
         lines.append(.init(label: "Reminders", value: reminderSummary(for: item, reminders: reminders)))
         if let url = item.validCancellationURL {
             lines.append(.init(label: "Manage / cancel", value: url.absoluteString))

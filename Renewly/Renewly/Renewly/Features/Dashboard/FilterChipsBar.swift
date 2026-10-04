@@ -10,6 +10,7 @@ import SwiftUI
 
 struct FilterChipsBar: View {
     @Binding var selection: DashboardFilter
+    var counts: [DashboardFilter: Int] = [:]
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -18,8 +19,9 @@ struct FilterChipsBar: View {
                     chip(for: filter)
                 }
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, 4)
         }
+        .scrollClipDisabled()
         .rigidHaptic(trigger: selection)
     }
 
@@ -30,28 +32,43 @@ struct FilterChipsBar: View {
                 selection = filter
             }
         } label: {
-            Text(filter.title)
-                .vaultFont(.subheadline)
-                .fontWeight(.semibold)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
-                .background {
-                    if isSelected {
-                        Capsule().fill(Color.accentColor)
-                    } else {
-                        Capsule().fill(.ultraThinMaterial)
-                    }
+            HStack(spacing: 6) {
+                Text(filter.title)
+                    .appFont(.subheadline)
+                    .fontWeight(.semibold)
+                if let count = counts[filter] {
+                    Text(count, format: .number)
+                        .appFont(.caption)
+                        .fontWeight(.bold)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 1)
+                        .background(
+                            (isSelected ? Color.white.opacity(0.25) : Color.secondary.opacity(0.15)),
+                            in: Capsule()
+                        )
                 }
-                .overlay(Capsule().strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .foregroundStyle(isSelected ? Color.white : Color.primary)
+            .chipSurface(isSelected: isSelected)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(counts[filter].map { "\(filter.title), \($0)" } ?? filter.title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
-#Preview {
+#Preview("With counts") {
     @Previewable @State var filter: DashboardFilter = .all
+    FilterChipsBar(selection: $filter, counts: [.all: 6, .subscriptions: 3, .warranties: 3, .expiringSoon: 1])
+        .padding()
+}
+
+#Preview("No counts") {
+    @Previewable @State var filter: DashboardFilter = .warranties
     FilterChipsBar(selection: $filter)
         .padding()
 }

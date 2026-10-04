@@ -40,7 +40,13 @@ struct RenewlyApp: App {
                     .zIndex(1)
                 }
             }
-            .preferredColorScheme(theme.colorScheme)
+            .environment(\.appTheme, theme)
+            .task {
+                InterfaceStyleController.apply(theme, animated: false)
+            }
+            .onChange(of: theme) { _, newTheme in
+                InterfaceStyleController.apply(newTheme, animated: true)
+            }
         }
         .modelContainer(modelContainer)
     }

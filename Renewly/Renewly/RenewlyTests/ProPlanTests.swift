@@ -77,6 +77,38 @@ struct ProPlanTests {
         #expect(viewModel.errorMessage == nil)
     }
 
+    #if DEBUG
+    @MainActor
+    @Test("Debug Pro override unlocks and relocks premium features")
+    func debugOverride() {
+        let entitlements = MockEntitlementService()
+        let viewModel = DeveloperToolsViewModel(dependencies: AppDependencies(
+            entitlements: entitlements,
+            notifications: MockNotificationScheduler(),
+            receipts: InMemoryReceiptStore(),
+            pdfExporter: ReceiptPDFExporter()
+        ))
+        #expect(!entitlements.isPro)
+
+        viewModel.isProOverrideEnabled = true
+        #expect(entitlements.isPro)
+        #expect(MockNotificationScheduler().canEnableAlerts(for: UUID(), activeAlertItemIDs: [UUID(), UUID(), UUID()], isPro: entitlements.isPro))
+
+        viewModel.isProOverrideEnabled = false
+        #expect(!entitlements.isPro)
+        #expect(!MockNotificationScheduler().canEnableAlerts(for: UUID(), activeAlertItemIDs: [UUID(), UUID(), UUID()], isPro: entitlements.isPro))
+    }
+
+    @MainActor
+    @Test("Turning the override off never removes a real purchase")
+    func overrideKeepsRealPurchase() {
+        let entitlements = MockEntitlementService(isPro: true)
+        entitlements.isDebugProOverrideEnabled = true
+        entitlements.isDebugProOverrideEnabled = false
+        #expect(entitlements.isPro)
+    }
+    #endif
+
     @MainActor
     @Test("Purchase failures surface a message")
     func purchaseFailure() async {

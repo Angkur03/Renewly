@@ -50,11 +50,11 @@ struct ReceiptPickerView: View {
                     .accessibilityLabel("Remove receipt")
                 }
             }
-            .vaultFont(.subheadline)
+            .appFont(.subheadline)
 
             if loadFailed {
                 Text("That photo could not be loaded. Try another one.")
-                    .vaultFont(.caption)
+                    .appFont(.caption)
                     .foregroundStyle(.red)
             }
         }
@@ -90,7 +90,7 @@ struct ReceiptPickerView: View {
                         Image(systemName: "doc.text.viewfinder")
                             .font(.title)
                         Text("Attach a receipt or warranty card")
-                            .vaultFont(.footnote)
+                            .appFont(.footnote)
                     }
                     .foregroundStyle(.secondary)
                 }

@@ -55,6 +55,7 @@ struct ItemEditorView: View {
                         TextField("0.00", value: $viewModel.cost, format: .number.precision(.fractionLength(0...2)))
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
+                            .foregroundStyle(viewModel.cost > ItemEditorViewModel.maxCost ? Color.orange : Color.primary)
                     }
                     CurrencyField(title: "Currency", selection: $viewModel.currencyCode)
                 }
@@ -78,6 +79,7 @@ struct ItemEditorView: View {
                     Toggle(isOn: $viewModel.isNotificationEnabled) {
                         Label("Reminders", systemImage: "bell.badge")
                     }
+                    .disabled(!viewModel.canEnableReminders)
                 } footer: {
                     Text(reminderFooter)
                 }
@@ -89,7 +91,9 @@ struct ItemEditorView: View {
                     }
                 }
             }
-            .vaultFont(.body)
+            .appFont(.body)
+            .scrollContentBackground(.hidden)
+            .background(AppBackground())
             .navigationTitle(viewModel.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -108,6 +112,9 @@ struct ItemEditorView: View {
             .onChange(of: viewModel.isNotificationEnabled) { _, isOn in
                 viewModel.notificationToggleChanged(to: isOn, activeAlertItemIDs: activeAlertItemIDs)
             }
+            .onChange(of: viewModel.canEnableReminders) { _, canEnable in
+                if !canEnable { viewModel.isNotificationEnabled = false }
+            }
             .task {
                 viewModel.applyDefaultReminder(activeAlertItemIDs: activeAlertItemIDs)
                 await viewModel.loadExistingReceipt()
@@ -124,6 +131,9 @@ struct ItemEditorView: View {
 
     private var reminderFooter: String {
         let preferences = ReminderPreferences(isEnabled: remindersEnabled, offsetsRaw: reminderOffsetsRaw)
+        guard viewModel.canEnableReminders else {
+            return "This warranty has already expired, so there is nothing left to remind you about."
+        }
         guard preferences.isEnabled else {
             return "Reminders are turned off for all items in Settings."
         }
@@ -136,32 +146,61 @@ struct ItemEditorView: View {
 
     private func subscriptionSection(viewModel: ItemEditorViewModel) -> some View {
         @Bindable var viewModel = viewModel
-        return Section("Billing") {
+        return Section {
             Picker("Renewal cycle", selection: $viewModel.billingCycle) {
                 ForEach(BillingCycle.allCases) { cycle in
                     Text(cycle.title).tag(cycle)
                 }
             }
             DatePicker(ItemCategory.subscription.startLabel, selection: $viewModel.startDate, displayedComponents: .date)
-            DatePicker(ItemCategory.subscription.expirationLabel, selection: $viewModel.expirationDate, displayedComponents: .date)
+            expirationPicker(viewModel: viewModel)
             TextField("Cancellation link (optional)", text: $viewModel.cancellationURL)
                 .keyboardType(.URL)
                 .textContentType(.URL)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+        } header: {
+            Text("Billing")
+        } footer: {
+            if let hint = viewModel.rolloverHint {
+                Label(hint, systemImage: "arrow.triangle.2.circlepath")
+            }
         }
     }
 
     private func warrantySection(viewModel: ItemEditorViewModel) -> some View {
         @Bindable var viewModel = viewModel
-        return Section("Warranty") {
+        return Section {
             TextField("Retailer (optional)", text: $viewModel.retailer)
             TextField("Serial number (optional)", text: $viewModel.serialNumber)
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
-            DatePicker(ItemCategory.warranty.startLabel, selection: $viewModel.startDate, displayedComponents: .date)
-            DatePicker(ItemCategory.warranty.expirationLabel, selection: $viewModel.expirationDate, displayedComponents: .date)
+            DatePicker(
+                ItemCategory.warranty.startLabel,
+                selection: $viewModel.startDate,
+                in: ...Date.now,
+                displayedComponents: .date
+            )
+            expirationPicker(viewModel: viewModel)
+        } header: {
+            Text("Warranty")
+        } footer: {
+            if viewModel.isExpirationInPast {
+                Label("This warranty has already expired. It will be listed under Expired.", systemImage: "clock.arrow.circlepath")
+            }
         }
+    }
+
+    private func expirationPicker(viewModel: ItemEditorViewModel) -> some View {
+        DatePicker(
+            viewModel.category.expirationLabel,
+            selection: Binding(
+                get: { viewModel.expirationDate },
+                set: { viewModel.setExpirationDate($0) }
+            ),
+            in: viewModel.startDate...,
+            displayedComponents: .date
+        )
     }
 
     private func save() {

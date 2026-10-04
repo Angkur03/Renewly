@@ -40,7 +40,7 @@
           },
           "localizations" : [
             {
-              "description" : "Unlimited reminders and boutique fonts, billed monthly.",
+              "description" : "Unlimited reminders for every item, billed monthly.",
               "displayName" : "Renewly Pro Monthly",
               "locale" : "en_US"
             }
@@ -69,7 +69,7 @@
           },
           "localizations" : [
             {
-              "description" : "Unlimited reminders and boutique fonts, billed yearly.",
+              "description" : "Unlimited reminders for every item, billed yearly.",
               "displayName" : "Renewly Pro Yearly",
               "locale" : "en_US"
             }

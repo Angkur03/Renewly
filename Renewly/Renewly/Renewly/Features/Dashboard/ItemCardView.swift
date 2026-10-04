@@ -24,10 +24,10 @@ struct ItemCardView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(item.title)
-                    .vaultFont(.headline)
+                    .appFont(.headline)
                     .lineLimit(1)
                 Text(subtitle)
-                    .vaultFont(.caption)
+                    .appFont(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                 HStack(spacing: 6) {
@@ -42,17 +42,17 @@ struct ItemCardView: View {
 
             VStack(alignment: .trailing, spacing: 2) {
                 Text(item.cost, format: .currency(code: item.currencyCode))
-                    .vaultFont(.headline)
+                    .appFont(.headline)
                     .lineLimit(1)
                 if item.category == .subscription {
                     Text(item.billingCycle.shortSuffix)
-                        .vaultFont(.caption)
+                        .appFont(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
         }
         .padding(16)
-        .glassSurface(cornerRadius: 20)
+        .cardSurface(cornerRadius: 20)
         .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityElement(children: .combine)
     }
@@ -74,11 +74,11 @@ struct ItemCardView: View {
     private func expirationBadge(for snapshot: ItemSnapshot) -> some View {
         let days = snapshot.daysUntilExpiration(from: now)
         if days < 0 {
-            BadgeView("Expired", systemImage: "exclamationmark.triangle.fill", tint: .red)
-        } else if days == 0 {
-            BadgeView("Today", systemImage: "clock.fill", tint: .orange)
+            BadgeView(ExpiryText.badge(days: days), systemImage: "exclamationmark.triangle.fill", tint: .red)
+        } else if days <= 1 {
+            BadgeView(ExpiryText.badge(days: days), systemImage: "clock.badge.exclamationmark.fill", tint: .red)
         } else if snapshot.isExpiringSoon(now: now) {
-            BadgeView("\(days)d left", systemImage: "clock.fill", tint: .orange)
+            BadgeView(ExpiryText.badge(days: days), systemImage: "clock.fill", tint: .orange)
         } else {
             BadgeView(item.category.title, tint: tint(for: item.category))
         }

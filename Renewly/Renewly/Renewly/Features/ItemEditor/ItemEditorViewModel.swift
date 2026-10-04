@@ -16,14 +16,23 @@ import SwiftData
 final class ItemEditorViewModel {
     static let maxTitleLength = 80
     static let maxFieldLength = 120
+    static let maxCost: Double = 1_000_000_000
+    static let defaultWarrantyYears = 1
 
-    var category: ItemCategory
+    var category: ItemCategory {
+        didSet { refreshSuggestedExpiration() }
+    }
     var title: String
     var cost: Double
     var currencyCode: String
-    var startDate: Date
+    var startDate: Date {
+        didSet { refreshSuggestedExpiration() }
+    }
+    /// Use `setExpirationDate(_:)` for user edits so the suggested date stops tracking the start date.
     var expirationDate: Date
-    var billingCycle: BillingCycle
+    var billingCycle: BillingCycle {
+        didSet { refreshSuggestedExpiration() }
+    }
     var serialNumber: String
     var retailer: String
     var cancellationURL: String
@@ -40,20 +49,34 @@ final class ItemEditorViewModel {
     @ObservationIgnored private var pendingReceiptData: Data?
     @ObservationIgnored private var shouldRemoveExistingReceipt = false
     @ObservationIgnored private var didApplyDefaultReminder = false
+    @ObservationIgnored private var hasEditedExpiration: Bool
+    @ObservationIgnored private let now: Date
+    @ObservationIgnored private let calendar: Calendar
     @ObservationIgnored private let dependencies: AppDependencies
     @ObservationIgnored private let logger = Logger(subsystem: "com.beleiveinAllahRenewly.Renewly", category: "ItemEditor")
 
-    init(item: TrackedItem?, defaultCurrency: String, dependencies: AppDependencies, now: Date = .now) {
+    init(
+        item: TrackedItem?,
+        defaultCurrency: String,
+        dependencies: AppDependencies,
+        now: Date = .now,
+        calendar: Calendar = .current
+    ) {
         self.item = item
         self.dependencies = dependencies
+        self.now = now
+        self.calendar = calendar
+        hasEditedExpiration = item != nil
         itemID = item?.id ?? UUID()
         category = item?.category ?? .subscription
         title = item?.title ?? ""
         cost = item?.cost ?? 0
         currencyCode = item?.currencyCode ?? defaultCurrency
         startDate = item?.startDate ?? now
-        expirationDate = item?.expirationDate ?? Calendar.current.date(byAdding: .month, value: 1, to: now) ?? now
         billingCycle = item?.billingCycle ?? .monthly
+        expirationDate = item?.expirationDate
+            ?? calendar.date(byAdding: .month, value: BillingCycle.monthly.monthsPerCycle, to: now)
+            ?? now
         serialNumber = item?.serialNumber ?? ""
         retailer = item?.retailer ?? ""
         cancellationURL = item?.cancellationURL ?? ""
@@ -61,6 +84,50 @@ final class ItemEditorViewModel {
     }
 
     var isEditing: Bool { item != nil }
+
+    // MARK: Dates
+
+    func setExpirationDate(_ date: Date) {
+        hasEditedExpiration = true
+        expirationDate = date
+    }
+
+    /// Subscription: the first renewal after the start date that is not in the past. Warranty: one year after purchase.
+    var suggestedExpirationDate: Date {
+        switch category {
+        case .subscription:
+            let firstRenewal = calendar.date(byAdding: .month, value: billingCycle.monthsPerCycle, to: startDate) ?? startDate
+            return billingCycle.nextRenewal(from: firstRenewal, onOrAfter: now, calendar: calendar)
+        case .warranty:
+            return calendar.date(byAdding: .year, value: Self.defaultWarrantyYears, to: startDate) ?? startDate
+        }
+    }
+
+    var isExpirationInPast: Bool {
+        calendar.startOfDay(for: expirationDate) < calendar.startOfDay(for: now)
+    }
+
+    /// The renewal date that will actually be stored; past subscription dates move to the next cycle.
+    var effectiveExpirationDate: Date {
+        guard category == .subscription, isExpirationInPast else { return expirationDate }
+        return billingCycle.nextRenewal(from: expirationDate, onOrAfter: now, calendar: calendar)
+    }
+
+    var rolloverHint: String? {
+        guard category == .subscription, isExpirationInPast else { return nil }
+        let date = effectiveExpirationDate.formatted(date: .abbreviated, time: .omitted)
+        return "That date has passed, so it will be saved as the next renewal: \(date)."
+    }
+
+    /// Reminders for a warranty that has already ended would never fire.
+    var canEnableReminders: Bool {
+        !(category == .warranty && isExpirationInPast)
+    }
+
+    private func refreshSuggestedExpiration() {
+        guard !hasEditedExpiration else { return }
+        expirationDate = suggestedExpirationDate
+    }
 
     var navigationTitle: String { isEditing ? "Edit Item" : "New Item" }
 
@@ -75,6 +142,9 @@ final class ItemEditorViewModel {
     var validationMessage: String? {
         if trimmedTitle.isEmpty { return "Enter a name." }
         if !cost.isFinite || cost < 0 { return "Enter a valid price." }
+        if cost > Self.maxCost {
+            return "Price must be \(Self.maxCost.formatted(.number.precision(.fractionLength(0)))) or less."
+        }
         if expirationDate < startDate { return "\(category.expirationLabel) must be after \(category.startLabel.lowercased())." }
         if category == .subscription && !isCancellationURLValid { return "Cancellation link must start with https://." }
         return nil
@@ -107,7 +177,7 @@ final class ItemEditorViewModel {
     func applyDefaultReminder(activeAlertItemIDs: Set<UUID>) {
         guard !isEditing, !didApplyDefaultReminder else { return }
         didApplyDefaultReminder = true
-        isNotificationEnabled = dependencies.notifications.canEnableAlerts(
+        isNotificationEnabled = canEnableReminders && dependencies.notifications.canEnableAlerts(
             for: itemID,
             activeAlertItemIDs: activeAlertItemIDs,
             isPro: dependencies.entitlements.isPro
@@ -133,6 +203,9 @@ final class ItemEditorViewModel {
         isSaving = true
         defer { isSaving = false }
 
+        if !canEnableReminders {
+            isNotificationEnabled = false
+        }
         if isNotificationEnabled {
             guard await verifyCanSchedule(activeAlertItemIDs: activeAlertItemIDs) else { return false }
         }
@@ -209,7 +282,7 @@ final class ItemEditorViewModel {
                 cost: cost,
                 currencyCode: currencyCode,
                 startDate: startDate,
-                expirationDate: expirationDate
+                expirationDate: effectiveExpirationDate
             )
             context.insert(target)
         }
@@ -219,7 +292,7 @@ final class ItemEditorViewModel {
         target.cost = cost
         target.currencyCode = currencyCode
         target.startDate = startDate
-        target.expirationDate = expirationDate
+        target.expirationDate = effectiveExpirationDate
         target.isNotificationEnabled = isNotificationEnabled
         target.receiptImagePath = receiptPath
 

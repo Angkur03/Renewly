@@ -18,11 +18,5 @@
 		<key>UIImageRespectsSafeAreaInsets</key>
 		<false/>
 	</dict>
-	<key>UIAppFonts</key>
-	<array>
-		<string>ClashDisplay-Medium.otf</string>
-		<string>Satoshi-Bold.otf</string>
-		<string>JetBrainsMono-Regular.ttf</string>
-	</array>
 </dict>
 </plist>

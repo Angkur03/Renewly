@@ -16,12 +16,22 @@ struct ItemDetailView: View {
     @AppStorage(AppStorageKey.primaryCurrency) private var primaryCurrency = CurrencyDefaults.deviceCurrencyCode
     @AppStorage(AppStorageKey.remindersEnabled) private var remindersEnabled = true
     @AppStorage(AppStorageKey.reminderOffsets) private var reminderOffsetsRaw = ReminderPreferences.defaultOffsetsRaw
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @State private var viewModel: ItemDetailViewModel
+    @State private var isEditorPresented = false
+    @State private var isConfirmingDelete = false
+    @State private var now = Date.now
 
     private var reminders: ReminderPreferences {
         ReminderPreferences(isEnabled: remindersEnabled, offsetsRaw: reminderOffsetsRaw)
     }
-    @State private var isEditorPresented = false
+
+    /// A deleted model must not be read; its backing data is gone.
+    private var isItemGone: Bool {
+        item.isDeleted || item.modelContext == nil
+    }
 
     init(item: TrackedItem, dependencies: AppDependencies) {
         self.item = item
@@ -30,11 +40,25 @@ struct ItemDetailView: View {
     }
 
     var body: some View {
+        if isItemGone {
+            ContentUnavailableView(
+                "Item removed",
+                systemImage: "trash",
+                description: Text("This item is no longer tracked.")
+            )
+            .background(AppBackground())
+        } else {
+            content
+        }
+    }
+
+    private var content: some View {
         @Bindable var viewModel = viewModel
 
-        ScrollView {
+        return ScrollView {
             VStack(spacing: 16) {
                 header
+                TimeLeftCard(item: item, now: now)
                 detailsCard
                 receiptCard
                 exportCard
@@ -46,16 +70,47 @@ struct ItemDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button {
-                    Task { await viewModel.exportPDF(for: item, reminders: reminders) }
-                } label: {
-                    Image(systemName: "doc.richtext")
-                }
-                .accessibilityLabel("Export PDF")
-                .disabled(viewModel.isExporting)
-
                 Button("Edit") { isEditorPresented = true }
+                    .disabled(viewModel.isDeleting)
+
+                Menu {
+                    Button {
+                        Task { await viewModel.exportPDF(for: item, reminders: reminders) }
+                    } label: {
+                        Label("Export PDF", systemImage: "doc.richtext")
+                    }
+                    .disabled(viewModel.isExporting)
+
+                    if let url = item.validCancellationURL {
+                        Link(destination: url) {
+                            Label("Manage or cancel", systemImage: "arrow.up.right.square")
+                        }
+                    }
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        isConfirmingDelete = true
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+                .accessibilityLabel("More actions")
+                .disabled(viewModel.isDeleting)
             }
+        }
+        .confirmationDialog("Delete \(item.title)?", isPresented: $isConfirmingDelete, titleVisibility: .visible) {
+            Button("Delete", role: .destructive) {
+                Task {
+                    if await viewModel.delete(item, in: modelContext) {
+                        dismiss()
+                    }
+                }
+            }
+        } message: {
+            Text("Its reminders and receipt photo will be removed too. This can't be undone.")
         }
         .sheet(isPresented: $isEditorPresented) {
             ItemEditorView(item: item, defaultCurrency: primaryCurrency, dependencies: dependencies)
@@ -66,6 +121,12 @@ struct ItemDetailView: View {
         .task(id: item.receiptImagePath) {
             await viewModel.loadReceipt(at: item.receiptImagePath)
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active { now = .now }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            now = .now
+        }
         .rigidHaptic(trigger: viewModel.exportedPDF)
         .errorAlert(message: $viewModel.errorMessage)
     }
@@ -75,10 +136,10 @@ struct ItemDetailView: View {
             VStack(alignment: .leading, spacing: 10) {
                 BadgeView(item.category.title, systemImage: item.category.systemImage)
                 Text(item.cost, format: .currency(code: item.currencyCode))
-                    .vaultFont(.largeTitle)
+                    .appFont(.largeTitle)
                 if item.category == .subscription {
                     Text("\(item.billingCycle.title) · \(item.billingCycle.monthlyEquivalent(of: item.cost).formatted(.currency(code: item.currencyCode)))/mo")
-                        .vaultFont(.subheadline)
+                        .appFont(.subheadline)
                         .foregroundStyle(.secondary)
                 }
             }
@@ -101,7 +162,7 @@ struct ItemDetailView: View {
                 if let url = item.validCancellationURL {
                     Link(destination: url) {
                         Label("Manage or cancel", systemImage: "arrow.up.right.square")
-                            .vaultFont(.body)
+                            .appFont(.body)
                     }
                 }
             }
@@ -114,7 +175,7 @@ struct ItemDetailView: View {
             GlassCard {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(item.category == .warranty ? "Warranty card / receipt" : "Receipt")
-                        .vaultFont(.headline)
+                        .appFont(.headline)
                     if let receiptImage = viewModel.receiptImage {
                         Image(uiImage: receiptImage)
                             .resizable()
@@ -123,7 +184,7 @@ struct ItemDetailView: View {
                             .accessibilityLabel("Receipt image")
                     } else if viewModel.receiptLoadFailed {
                         Label("The receipt image could not be loaded.", systemImage: "exclamationmark.triangle")
-                            .vaultFont(.footnote)
+                            .appFont(.footnote)
                             .foregroundStyle(.secondary)
                     } else {
                         ProgressView()
@@ -146,11 +207,11 @@ struct ItemDetailView: View {
                     .background(Color.accentColor.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Export as PDF")
-                        .vaultFont(.headline)
+                        .appFont(.headline)
                     Text(item.receiptImagePath == nil
                          ? "Details only. Attach a receipt to include it."
                          : "Details plus the attached \(item.category == .warranty ? "card" : "receipt"), ready to print or share.")
-                        .vaultFont(.caption)
+                        .appFont(.caption)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.leading)
                 }
@@ -163,7 +224,7 @@ struct ItemDetailView: View {
                 }
             }
             .padding(16)
-            .glassSurface(cornerRadius: 20)
+            .cardSurface(cornerRadius: 20)
             .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -173,18 +234,18 @@ struct ItemDetailView: View {
     private func row(_ title: String, value: String) -> some View {
         HStack(alignment: .firstTextBaseline) {
             Text(title)
-                .vaultFont(.subheadline)
+                .appFont(.subheadline)
                 .foregroundStyle(.secondary)
             Spacer()
             Text(value)
-                .vaultFont(.body)
+                .appFont(.body)
                 .multilineTextAlignment(.trailing)
         }
         .accessibilityElement(children: .combine)
     }
 }
 
-#Preview {
+#Preview("Warranty") {
     let container = PreviewData.container(populated: false)
     let item = PreviewData.sampleItems()[2]
     container.mainContext.insert(item)
@@ -192,4 +253,21 @@ struct ItemDetailView: View {
         ItemDetailView(item: item, dependencies: PreviewData.dependencies())
     }
     .modelContainer(container)
+}
+
+#Preview("Subscription") {
+    let container = PreviewData.container(populated: false)
+    let item = PreviewData.sampleItems()[0]
+    container.mainContext.insert(item)
+    return NavigationStack {
+        ItemDetailView(item: item, dependencies: PreviewData.dependencies())
+    }
+    .modelContainer(container)
+}
+
+#Preview("Removed item") {
+    NavigationStack {
+        ItemDetailView(item: PreviewData.sampleItems()[0], dependencies: PreviewData.dependencies())
+    }
+    .modelContainer(PreviewData.container(populated: false))
 }

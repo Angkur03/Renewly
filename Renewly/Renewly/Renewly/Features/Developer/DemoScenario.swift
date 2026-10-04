@@ -8,6 +8,7 @@
 
 #if DEBUG
 import Foundation
+import SwiftData
 
 nonisolated enum DemoScenario: String, CaseIterable, Identifiable, Sendable {
     case starter
@@ -34,7 +35,7 @@ nonisolated enum DemoScenario: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .starter: "4 subscriptions and 3 warranties with realistic prices."
         case .expiringSoon: "Items due today, tomorrow and within 2 weeks."
-        case .expired: "Lapsed subscriptions and ended warranties."
+        case .expired: "Ended warranties, plus lapsed subscriptions that roll to their next renewal."
         case .mixedCurrencies: "EUR, GBP, JPY and BDT to test excluded totals."
         case .bulk: "Lots of rows for scrolling and performance checks."
         }
@@ -94,6 +95,7 @@ enum DemoDataFactory {
             return [
                 subscription("Hulu", 17.99, .monthly, start: -95, renews: -5),
                 warranty("Kindle Paperwhite", 149, retailer: "Amazon", serial: "G000-PW-5512", start: -400, expires: -35),
+                warranty("Bose QC45", 329, retailer: "Bose", serial: "QC45-20931", start: -367, expires: -2),
                 subscription("NYTimes Digital", 25, .quarterly, start: -120, renews: -1)
             ]
         case .mixedCurrencies:
@@ -113,6 +115,21 @@ enum DemoDataFactory {
                 }
                 return subscription("Demo service #\(index + 1)", Double(5 + index % 12) + 0.99, cycles[index % cycles.count], start: renews - 30, renews: renews)
             }
+        }
+    }
+
+    /// Launch with `-seed_demo starter,expiringSoon` to fill an empty store, e.g. for UI checks and screenshots.
+    static func seedFromLaunchArguments(into context: ModelContext, currency: String) {
+        guard let raw = UserDefaults.standard.string(forKey: "seed_demo") else { return }
+        let scenarios = raw.split(separator: ",").compactMap { DemoScenario(rawValue: String($0)) }
+        guard !scenarios.isEmpty else { return }
+
+        do {
+            guard try context.fetchCount(FetchDescriptor<TrackedItem>()) == 0 else { return }
+            scenarios.flatMap { items(for: $0, currency: currency) }.forEach(context.insert)
+            try context.save()
+        } catch {
+            context.rollback()
         }
     }
 }

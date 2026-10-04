@@ -16,6 +16,10 @@ protocol EntitlementProviding: AnyObject, Observable {
     var plans: [ProPlan] { get }
     var activeSubscription: ActiveSubscription? { get }
     var isProcessing: Bool { get }
+    #if DEBUG
+    /// Debug builds only: unlocks Pro without a purchase. Persists across launches.
+    var isDebugProOverrideEnabled: Bool { get set }
+    #endif
 
     func loadProducts() async
     func refreshEntitlements() async

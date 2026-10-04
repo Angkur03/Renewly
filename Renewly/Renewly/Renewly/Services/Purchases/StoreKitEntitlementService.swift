@@ -14,13 +14,23 @@ import StoreKit
 @Observable
 @MainActor
 final class StoreKitEntitlementService: EntitlementProviding {
-    private(set) var isPro = false
+    private(set) var hasPurchasedPro = false
     private(set) var isProcessing = false
     private(set) var plans: [ProPlan] = []
     private(set) var activeSubscription: ActiveSubscription?
 
     @ObservationIgnored private var products: [ProPlanKind: Product] = [:]
     @ObservationIgnored private let logger = Logger(subsystem: "com.beleiveinAllahRenewly.Renewly", category: "Purchases")
+
+    #if DEBUG
+    var isDebugProOverrideEnabled = UserDefaults.standard.bool(forKey: AppStorageKey.debugProOverride) {
+        didSet { UserDefaults.standard.set(isDebugProOverrideEnabled, forKey: AppStorageKey.debugProOverride) }
+    }
+
+    var isPro: Bool { hasPurchasedPro || isDebugProOverrideEnabled }
+    #else
+    var isPro: Bool { hasPurchasedPro }
+    #endif
 
     func loadProducts() async {
         do {
@@ -62,7 +72,7 @@ final class StoreKitEntitlementService: EntitlementProviding {
         } else {
             activeSubscription = nil
         }
-        isPro = best != nil
+        hasPurchasedPro = best != nil
         await rebuildPlans()
     }
 

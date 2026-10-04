@@ -23,37 +23,23 @@ struct GlassCard<Content: View>: View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .glassSurface(cornerRadius: cornerRadius)
+            .cardSurface(cornerRadius: cornerRadius)
     }
 }
 
-extension View {
-    func glassSurface(cornerRadius: CGFloat) -> some View {
-        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-        return background(.ultraThinMaterial, in: shape)
-            .overlay(shape.strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
-            .shadow(color: .black.opacity(0.08), radius: 12, y: 6)
-    }
-}
-
-struct AppBackground: View {
-    var body: some View {
-        LinearGradient(
-            colors: [Color.accentColor.opacity(0.18), Color(.systemBackground), Color.purple.opacity(0.10)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
-    }
-}
-
-#Preview {
-    ZStack {
-        AppBackground()
-        GlassCard {
-            Text("Glass card")
-                .vaultFont(.headline)
+#Preview("Themes") {
+    HStack(spacing: 0) {
+        ForEach(AppTheme.allCases) { theme in
+            ZStack {
+                AppBackground()
+                GlassCard {
+                    Text(theme.title)
+                        .appFont(.headline)
+                }
+                .padding()
+            }
+            .environment(\.appTheme, theme)
+            .environment(\.colorScheme, theme == .dark ? .dark : .light)
         }
-        .padding()
     }
 }

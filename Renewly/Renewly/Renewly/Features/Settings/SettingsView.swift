@@ -11,7 +11,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @AppStorage(AppStorageKey.theme) private var theme: AppTheme = .system
-    @AppStorage(AppStorageKey.font) private var fontFamily: VaultFontFamily = .system
     @AppStorage(AppStorageKey.primaryCurrency) private var primaryCurrency = CurrencyDefaults.deviceCurrencyCode
     @AppStorage(AppStorageKey.remindersEnabled) private var remindersEnabled = true
     @AppStorage(AppStorageKey.reminderOffsets) private var reminderOffsetsRaw = ReminderPreferences.defaultOffsetsRaw
@@ -45,24 +44,8 @@ struct SettingsView: View {
             notificationsSection
 
             Section("Appearance") {
-                Picker("Theme", selection: $theme) {
-                    ForEach(AppTheme.allCases) { theme in
-                        Label(theme.title, systemImage: theme.systemImage).tag(theme)
-                    }
-                }
-                .pickerStyle(.segmented)
-            }
-
-            Section {
-                ForEach(VaultFontFamily.allCases) { family in
-                    fontRow(for: family)
-                }
-            } header: {
-                Text("Typography")
-            } footer: {
-                if !viewModel.isPro {
-                    Text("Boutique fonts are part of Renewly Pro.")
-                }
+                ThemePicker(selection: $theme)
+                    .listRowInsets(EdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14))
             }
 
             Section {
@@ -113,7 +96,7 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .vaultFont(.body)
+        .appFont(.body)
         .scrollContentBackground(.hidden)
         .background(AppBackground())
         .navigationTitle("Settings")
@@ -134,7 +117,6 @@ struct SettingsView: View {
             Task { await viewModel.remindersTurnedOn() }
         }
         .rigidHaptic(trigger: theme)
-        .rigidHaptic(trigger: fontFamily)
         .rigidHaptic(trigger: remindersEnabled)
         .rigidHaptic(trigger: reminderOffsetsRaw)
         .errorAlert(message: $viewModel.errorMessage)
@@ -179,12 +161,12 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Notifications are blocked for Renewly in iOS Settings.", systemImage: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
-                .vaultFont(.subheadline)
+                .appFont(.subheadline)
             Button("Open iOS Settings") {
                 guard let url = URL(string: UIApplication.openNotificationSettingsURLString) else { return }
                 openURL(url)
             }
-            .vaultFont(.subheadline)
+            .appFont(.subheadline)
         }
         .padding(.vertical, 4)
     }
@@ -200,47 +182,13 @@ struct SettingsView: View {
                 Text(ReminderPreferences.title(for: offset))
                 if isRequired {
                     Text("Always on")
-                        .vaultFont(.caption)
+                        .appFont(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
         }
         .disabled(isRequired)
         .padding(.leading, 8)
-    }
-
-    private func fontRow(for family: VaultFontFamily) -> some View {
-        let isLocked = family.requiresPro && !viewModel.isPro
-        let isSelected = VaultFontFamily.resolved(selected: fontFamily, isPro: viewModel.isPro) == family
-        return Button {
-            if viewModel.canSelect(family) {
-                fontFamily = family
-            }
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(family.displayName)
-                        .font(family.font(for: .body))
-                        .foregroundStyle(.primary)
-                    if !family.isInstalled {
-                        Text("Font file not bundled; using system font")
-                            .vaultFont(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Spacer()
-                if isLocked {
-                    Image(systemName: "lock.fill")
-                        .foregroundStyle(.secondary)
-                        .accessibilityLabel("Requires Pro")
-                } else if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(Color.accentColor)
-                        .fontWeight(.semibold)
-                }
-            }
-        }
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -254,7 +202,13 @@ struct SettingsView: View {
     NavigationStack {
         SettingsView(dependencies: PreviewData.dependencies(isPro: true))
     }
-    .environment(\.isProUser, true)
+}
+
+#Preview("Light theme") {
+    NavigationStack {
+        SettingsView(dependencies: PreviewData.dependencies())
+    }
+    .environment(\.appTheme, .light)
 }
 
 #Preview("Notifications blocked") {

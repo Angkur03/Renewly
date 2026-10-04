@@ -27,7 +27,7 @@ struct BadgeView: View {
             }
             Text(text)
         }
-        .vaultFont(.caption)
+        .appFont(.caption)
         .fontWeight(.semibold)
         .foregroundStyle(tint)
         .padding(.horizontal, 8)

@@ -33,11 +33,16 @@ struct DashboardView: View {
     let isUsingTemporaryStorage: Bool
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \TrackedItem.expirationDate) private var items: [TrackedItem]
     @AppStorage(AppStorageKey.primaryCurrency) private var primaryCurrency = CurrencyDefaults.deviceCurrencyCode
 
     @State private var viewModel: DashboardViewModel
     @State private var editorTarget: EditorTarget?
+    @State private var searchText = ""
+    @State private var pendingDeletion: TrackedItem?
+    /// Re-evaluated on foreground and at midnight so "days left" badges never go stale.
+    @State private var now = Date.now
 
     init(dependencies: AppDependencies, isUsingTemporaryStorage: Bool) {
         self.dependencies = dependencies
@@ -47,25 +52,38 @@ struct DashboardView: View {
 
     var body: some View {
         @Bindable var viewModel = viewModel
-        let visibleItems = viewModel.visibleItems(from: items)
+        let sections = viewModel.sections(from: items, query: searchText, now: now)
 
         List {
             Group {
                 if isUsingTemporaryStorage {
                     temporaryStorageBanner
                 }
-                SummaryHeaderCard(summary: viewModel.summary(for: items, currencyCode: primaryCurrency))
-                FilterChipsBar(selection: $viewModel.filter)
+                summaryCard
+                if !items.isEmpty {
+                    FilterChipsBar(selection: $viewModel.filter, counts: viewModel.counts(for: items, now: now))
+                }
             }
             .dashboardRow()
 
-            if visibleItems.isEmpty {
+            if sections.isEmpty {
                 emptyState
                     .dashboardRow()
             } else {
-                ForEach(visibleItems) { item in
-                    card(for: item)
-                        .dashboardRow()
+                if !sections.upcoming.isEmpty {
+                    sectionHeader("Upcoming", count: sections.upcoming.count, systemImage: "calendar")
+                    ForEach(sections.upcoming) { item in
+                        card(for: item)
+                            .dashboardRow()
+                    }
+                }
+                if !sections.expired.isEmpty {
+                    sectionHeader("Expired", count: sections.expired.count, systemImage: "clock.arrow.circlepath")
+                    ForEach(sections.expired) { item in
+                        card(for: item)
+                            .opacity(0.75)
+                            .dashboardRow()
+                    }
                 }
             }
         }
@@ -73,6 +91,29 @@ struct DashboardView: View {
         .scrollContentBackground(.hidden)
         .background(AppBackground())
         .animation(.snappy, value: viewModel.filter)
+        .animation(.snappy, value: searchText)
+        .modifier(DashboardSearch(text: $searchText, isEnabled: !items.isEmpty))
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active { now = .now }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            now = .now
+        }
+        .confirmationDialog(
+            pendingDeletion.map { "Delete \($0.title)?" } ?? "Delete item?",
+            isPresented: Binding(
+                get: { pendingDeletion != nil },
+                set: { if !$0 { pendingDeletion = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingDeletion
+        ) { item in
+            Button("Delete", role: .destructive) {
+                Task { await viewModel.delete(item, in: modelContext) }
+            }
+        } message: { _ in
+            Text("Its reminders and receipt photo will be removed too. This can't be undone.")
+        }
         .navigationTitle("Renewly")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -80,6 +121,13 @@ struct DashboardView: View {
                     Image(systemName: "gearshape")
                 }
                 .accessibilityLabel("Settings")
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(value: AppRoute.insights) {
+                    Image(systemName: "chart.pie")
+                }
+                .accessibilityLabel("Spending insights")
+                .disabled(items.isEmpty)
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -103,12 +151,12 @@ struct DashboardView: View {
         ZStack {
             NavigationLink(value: item) { EmptyView() }
                 .opacity(0)
-            ItemCardView(item: item)
+            ItemCardView(item: item, now: now)
         }
         .simultaneousGesture(TapGesture().onEnded { viewModel.registerInteraction() })
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
-                Task { await viewModel.delete(item, in: modelContext) }
+                pendingDeletion = item
             } label: {
                 Label("Delete", systemImage: "trash")
             }
@@ -126,24 +174,68 @@ struct DashboardView: View {
                 Label("Edit", systemImage: "pencil")
             }
             Button(role: .destructive) {
-                Task { await viewModel.delete(item, in: modelContext) }
+                pendingDeletion = item
             } label: {
                 Label("Delete", systemImage: "trash")
             }
         }
     }
 
+    @ViewBuilder
+    private var summaryCard: some View {
+        let summary = SummaryHeaderCard(
+            summary: viewModel.summary(for: items, currencyCode: primaryCurrency, now: now),
+            showsInsightsHint: !items.isEmpty
+        )
+        if items.isEmpty {
+            summary
+        } else {
+            ZStack {
+                NavigationLink(value: AppRoute.insights) { EmptyView() }
+                    .opacity(0)
+                summary
+            }
+            .accessibilityHint("Opens spending insights")
+        }
+    }
+
+    private func sectionHeader(_ title: String, count: Int, systemImage: String) -> some View {
+        HStack(spacing: 6) {
+            Label(title, systemImage: systemImage)
+                .appFont(.subheadline)
+                .fontWeight(.semibold)
+            Text(count, format: .number)
+                .appFont(.caption)
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        .foregroundStyle(.secondary)
+        .padding(.top, 8)
+        .accessibilityAddTraits(.isHeader)
+        .dashboardRow()
+    }
+
+    @ViewBuilder
     private var emptyState: some View {
+        if !items.isEmpty, !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            ContentUnavailableView.search(text: searchText)
+        } else {
+            noItemsState
+        }
+    }
+
+    private var noItemsState: some View {
         VStack(spacing: 12) {
             Image(systemName: items.isEmpty ? "tray" : "line.3.horizontal.decrease.circle")
                 .font(.system(size: 44))
                 .foregroundStyle(.secondary)
             Text(items.isEmpty ? "Nothing tracked yet" : "No matching items")
-                .vaultFont(.headline)
+                .appFont(.headline)
             Text(items.isEmpty
                  ? "Add a subscription or warranty to start getting reminders before they renew or expire."
                  : "Try a different filter.")
-                .vaultFont(.subheadline)
+                .appFont(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             if items.isEmpty {
@@ -164,11 +256,29 @@ struct DashboardView: View {
             "Your data could not be loaded from storage. Changes made now will not be saved after you close the app.",
             systemImage: "exclamationmark.triangle.fill"
         )
-        .vaultFont(.footnote)
+        .appFont(.footnote)
         .foregroundStyle(.orange)
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassSurface(cornerRadius: 16)
+        .cardSurface(cornerRadius: 16)
+    }
+}
+
+/// Search is pointless with nothing tracked, so the field only appears once there is at least one item.
+private struct DashboardSearch: ViewModifier {
+    @Binding var text: String
+    let isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.searchable(
+                text: $text,
+                placement: .navigationBarDrawer(displayMode: .automatic),
+                prompt: "Search name, store or serial"
+            )
+        } else {
+            content
+        }
     }
 }
 

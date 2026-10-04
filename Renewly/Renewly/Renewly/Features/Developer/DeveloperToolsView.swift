@@ -32,6 +32,27 @@ struct DeveloperToolsView: View {
             }
 
             Section {
+                Toggle(isOn: $viewModel.isProOverrideEnabled) {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Simulate Pro subscription")
+                            Text(viewModel.subscriptionStatusText)
+                                .appFont(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: viewModel.isPro ? "crown.fill" : "crown")
+                            .foregroundStyle(.yellow)
+                    }
+                }
+                .tint(.yellow)
+            } header: {
+                Text("Subscription")
+            } footer: {
+                Text("On: unlimited reminders and Pro status everywhere, without StoreKit. Off: the free plan returns, so only the \(NotificationManager.freeAlertLimit) soonest reminders stay on.")
+            }
+
+            Section {
                 ForEach(DemoScenario.allCases) { scenario in
                     Button {
                         viewModel.load(scenario, currency: primaryCurrency, into: modelContext)
@@ -71,7 +92,7 @@ struct DeveloperToolsView: View {
                 Text("Reset")
             }
         }
-        .vaultFont(.body)
+        .appFont(.body)
         .scrollContentBackground(.hidden)
         .background(AppBackground())
         .navigationTitle("Developer Tools")
@@ -82,7 +103,7 @@ struct DeveloperToolsView: View {
                 ProgressView()
                     .controlSize(.large)
                     .padding(24)
-                    .glassSurface(cornerRadius: 20)
+                    .cardSurface(cornerRadius: 20)
             }
         }
         .confirmationDialog(
@@ -110,6 +131,7 @@ struct DeveloperToolsView: View {
         }
         .errorAlert(message: $viewModel.errorMessage)
         .sensoryFeedback(.success, trigger: viewModel.actionCount)
+        .rigidHaptic(trigger: viewModel.isProOverrideEnabled)
         .task(id: viewModel.actionCount) {
             await viewModel.refreshPendingCount()
         }
@@ -120,7 +142,7 @@ struct DeveloperToolsView: View {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     Label("Debug build", systemImage: "hammer.fill")
-                        .vaultFont(.headline)
+                        .appFont(.headline)
                         .foregroundStyle(.orange)
                     Spacer()
                     BadgeView(viewModel.isPro ? "Pro" : "Free", systemImage: viewModel.isPro ? "crown.fill" : nil, tint: viewModel.isPro ? .yellow : .secondary)
@@ -139,11 +161,11 @@ struct DeveloperToolsView: View {
             Image(systemName: systemImage)
                 .foregroundStyle(Color.accentColor)
             Text(value)
-                .vaultFont(.headline)
+                .appFont(.headline)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             Text(title)
-                .vaultFont(.caption)
+                .appFont(.caption)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -161,10 +183,10 @@ struct DeveloperToolsView: View {
                 .background(Color.accentColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             VStack(alignment: .leading, spacing: 2) {
                 Text(scenario.title)
-                    .vaultFont(.body)
+                    .appFont(.body)
                     .fontWeight(.semibold)
                 Text(scenario.detail)
-                    .vaultFont(.caption)
+                    .appFont(.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)

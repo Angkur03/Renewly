@@ -18,11 +18,18 @@ final class MockEntitlementService: EntitlementProviding {
         ProPlan(kind: .yearly, displayPrice: "$19.99", price: 19.99, pricePerMonthText: "$1.66", freeTrialDays: 7)
     ]
 
-    private(set) var isPro: Bool
+    private(set) var hasPurchasedPro: Bool
     private(set) var isProcessing = false
     private(set) var activeSubscription: ActiveSubscription?
     let plans: [ProPlan]
     @ObservationIgnored private let purchaseError: PurchaseError?
+
+    #if DEBUG
+    var isDebugProOverrideEnabled = false
+    var isPro: Bool { hasPurchasedPro || isDebugProOverrideEnabled }
+    #else
+    var isPro: Bool { hasPurchasedPro }
+    #endif
 
     init(
         isPro: Bool = false,
@@ -30,7 +37,7 @@ final class MockEntitlementService: EntitlementProviding {
         activeSubscription: ActiveSubscription? = nil,
         purchaseError: PurchaseError? = nil
     ) {
-        self.isPro = isPro
+        self.hasPurchasedPro = isPro
         self.plans = plans
         self.activeSubscription = activeSubscription
             ?? (isPro ? ActiveSubscription(kind: .yearly, expirationDate: .now.addingTimeInterval(86_400 * 5), isInFreeTrial: true) : nil)
@@ -43,7 +50,7 @@ final class MockEntitlementService: EntitlementProviding {
 
     func purchase(_ plan: ProPlanKind) async throws(PurchaseError) -> Bool {
         if let purchaseError { throw purchaseError }
-        isPro = true
+        hasPurchasedPro = true
         activeSubscription = ActiveSubscription(kind: plan, expirationDate: .now.addingTimeInterval(86_400 * 7), isInFreeTrial: true)
         return true
     }

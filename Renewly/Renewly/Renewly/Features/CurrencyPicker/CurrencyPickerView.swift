@@ -92,11 +92,11 @@ struct CurrencyRow: View {
                 .padding(.trailing, 4)
             VStack(alignment: .leading, spacing: 2) {
                 Text(option.name)
-                    .vaultFont(.body)
+                    .appFont(.body)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text(option.symbol == option.code ? option.code : "\(option.code) · \(option.symbol)")
-                    .vaultFont(.caption)
+                    .appFont(.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
@@ -133,11 +133,11 @@ struct CurrencyField: View {
                     .padding(.trailing, 4)
                 VStack(alignment: .trailing, spacing: 0) {
                     Text(option.code)
-                        .vaultFont(.body)
+                        .appFont(.body)
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
                     Text(option.name)
-                        .vaultFont(.caption2)
+                        .appFont(.caption2)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
