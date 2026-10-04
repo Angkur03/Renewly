@@ -64,7 +64,8 @@ struct ItemCardView: View {
         let date = item.expirationDate.formatted(date: .abbreviated, time: .omitted)
         switch item.category {
         case .subscription where item.isInTrial():
-            return "Free trial · first charge \(date)"
+            let shortDate = item.expirationDate.formatted(.dateTime.day().month(.abbreviated))
+            return "Free trial · first charge \(shortDate)"
         case .subscription:
             return "\(item.billingCycle.title) · renews \(date)"
         case .warranty:
