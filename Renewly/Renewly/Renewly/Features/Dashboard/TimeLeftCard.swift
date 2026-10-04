@@ -13,20 +13,26 @@ struct TimeLeftCard: View {
     let item: TrackedItem
     let now: Date
 
+    private var isTrial: Bool { item.isInTrial() }
+
     var body: some View {
         let progress = TimeLeftProgress.make(
             category: item.category,
             billingCycle: item.billingCycle,
             startDate: item.startDate,
             expirationDate: item.expirationDate,
-            now: now
+            now: now,
+            isTrial: isTrial
         )
         let tint = tint(for: progress)
 
         GlassCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .firstTextBaseline) {
-                    Label(ExpiryText.relative(days: progress.daysLeft, category: item.category), systemImage: symbol(for: progress))
+                    Label(
+                        ExpiryText.relative(days: progress.daysLeft, category: item.category, isTrial: isTrial),
+                        systemImage: symbol(for: progress)
+                    )
                         .appFont(.headline)
                         .foregroundStyle(tint)
                     Spacer(minLength: 8)
@@ -51,6 +57,10 @@ struct TimeLeftCard: View {
                 ? "Coverage has ended. Keep the receipt in case the retailer offers goodwill repairs."
                 : "This period has ended."
         }
+        if isTrial {
+            let price = item.cost.formatted(.currency(code: item.currencyCode))
+            return "Free until then. You'll be charged \(price) unless you cancel before it ends."
+        }
         let period = item.category == .subscription ? "this billing period" : "the warranty"
         guard progress.totalDays > 0 else { return "Ends today." }
         return "\(ExpiryText.count(max(progress.daysLeft, 0), "day")) left of \(progress.totalDays) in \(period)"
@@ -59,6 +69,7 @@ struct TimeLeftCard: View {
     private func symbol(for progress: TimeLeftProgress) -> String {
         if progress.daysLeft < 0 { return "exclamationmark.triangle.fill" }
         if progress.daysLeft <= 3 { return "bell.badge.fill" }
+        if isTrial { return "gift.fill" }
         return item.category == .subscription ? "arrow.triangle.2.circlepath" : "checkmark.shield.fill"
     }
 

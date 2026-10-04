@@ -23,9 +23,11 @@ nonisolated struct TimeLeftProgress: Equatable, Sendable {
         startDate: Date,
         expirationDate: Date,
         now: Date,
+        isTrial: Bool = false,
         calendar: Calendar = .current
     ) -> TimeLeftProgress {
-        let periodStart = category == .subscription
+        // A trial runs from sign-up to the first charge, not a full billing cycle.
+        let periodStart = category == .subscription && !isTrial
             ? billingCycle.periodStart(endingAt: expirationDate, calendar: calendar)
             : startDate
         let start = calendar.startOfDay(for: periodStart)

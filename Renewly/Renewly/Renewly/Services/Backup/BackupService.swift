@@ -37,7 +37,8 @@ struct BackupService {
                 billingCycle: item.billingCycle.rawValue,
                 cancellationURL: item.cancellationURL,
                 createdAt: item.createdAt,
-                receiptImage: await receiptData(at: item.receiptImagePath)
+                receiptImage: await receiptData(at: item.receiptImagePath),
+                trialEndDate: item.trialEndDate
             ))
         }
         return BackupArchive(
@@ -124,7 +125,8 @@ struct BackupService {
             },
             billingCycle: BillingCycle(rawValue: backup.billingCycle) ?? .monthly,
             cancellationURL: cancellationURL,
-            createdAt: backup.createdAt
+            createdAt: backup.createdAt,
+            trialEndDate: isSubscription ? backup.trialEndDate : nil
         )
     }
 

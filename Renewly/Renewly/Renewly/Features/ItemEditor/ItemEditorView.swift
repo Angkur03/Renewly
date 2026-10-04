@@ -166,6 +166,9 @@ struct ItemEditorView: View {
                 }
             }
             DatePicker(ItemCategory.subscription.startLabel, selection: $viewModel.startDate, displayedComponents: .date)
+            Toggle(isOn: $viewModel.isFreeTrial) {
+                Label("Free trial", systemImage: "gift")
+            }
             expirationPicker(viewModel: viewModel)
             TextField("Cancellation link (optional)", text: $viewModel.cancellationURL)
                 .keyboardType(.URL)
@@ -177,6 +180,8 @@ struct ItemEditorView: View {
         } footer: {
             if let hint = viewModel.rolloverHint {
                 Label(hint, systemImage: "arrow.triangle.2.circlepath")
+            } else if let hint = viewModel.trialHint {
+                Label(hint, systemImage: "bell.badge")
             }
         }
     }
@@ -206,7 +211,7 @@ struct ItemEditorView: View {
 
     private func expirationPicker(viewModel: ItemEditorViewModel) -> some View {
         DatePicker(
-            viewModel.category.expirationLabel,
+            viewModel.expirationLabel,
             selection: Binding(
                 get: { viewModel.expirationDate },
                 set: { viewModel.setExpirationDate($0) }

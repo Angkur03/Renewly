@@ -112,10 +112,12 @@ final class ItemDetailViewModel {
             }
         }
         lines.append(.init(label: item.category.startLabel, value: item.startDate.formatted(longDate)))
-        lines.append(.init(label: item.category.expirationLabel, value: item.expirationDate.formatted(longDate)))
+        let isTrial = item.isInTrial()
+        let expirationLabel = isTrial ? "Trial ends (first charge)" : item.category.expirationLabel
+        lines.append(.init(label: expirationLabel, value: item.expirationDate.formatted(longDate)))
 
         let days = item.snapshot.daysUntilExpiration(from: now)
-        lines.append(.init(label: "Status", value: ExpiryText.relative(days: days, category: item.category)))
+        lines.append(.init(label: "Status", value: ExpiryText.relative(days: days, category: item.category, isTrial: isTrial)))
         lines.append(.init(label: "Reminders", value: reminderSummary(for: item, reminders: reminders)))
         if let url = item.validCancellationURL {
             lines.append(.init(label: "Manage / cancel", value: url.absoluteString))

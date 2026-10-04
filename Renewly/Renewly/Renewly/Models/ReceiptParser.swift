@@ -21,10 +21,12 @@ nonisolated struct ReceiptScan: Equatable, Sendable {
     var warrantyMonths: Int?
     var billingCycle: BillingCycle?
     var suggestedCategory: ItemCategory?
+    /// The text mentions a free trial, so the renewal date is likely the first charge.
+    var isFreeTrial = false
 
     var isEmpty: Bool {
         merchant == nil && total == nil && currencyCode == nil && purchaseDate == nil && renewalDate == nil
-            && serialNumber == nil && warrantyMonths == nil && billingCycle == nil
+            && serialNumber == nil && warrantyMonths == nil && billingCycle == nil && !isFreeTrial
     }
 }
 
@@ -50,7 +52,8 @@ nonisolated enum ReceiptParser {
             serialNumber: serial,
             warrantyMonths: warranty,
             billingCycle: cycle,
-            suggestedCategory: category(in: text, hasSerial: serial != nil, hasWarranty: warranty != nil, cycle: cycle)
+            suggestedCategory: category(in: text, hasSerial: serial != nil, hasWarranty: warranty != nil, cycle: cycle),
+            isFreeTrial: mentionsFreeTrial(in: text)
         )
     }
 
@@ -289,6 +292,13 @@ nonisolated enum ReceiptParser {
         let warrantyScore = (hasSerial ? 2 : 0) + (hasWarranty ? 2 : 0) + warrantyWords.filter { lower.contains($0) }.count
         guard subscriptionScore != warrantyScore else { return nil }
         return subscriptionScore > warrantyScore ? .subscription : .warranty
+    }
+
+    private static let trialPhrases = ["free trial", "trial ends", "trial period", "trial expires", "your trial"]
+
+    static func mentionsFreeTrial(in text: String) -> Bool {
+        let lower = text.lowercased()
+        return trialPhrases.contains { lower.contains($0) }
     }
 
     // MARK: Helpers

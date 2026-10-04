@@ -59,10 +59,14 @@ enum DemoDataFactory {
         func day(_ offset: Int) -> Date {
             calendar.date(byAdding: .day, value: offset, to: now) ?? now
         }
-        func subscription(_ title: String, _ cost: Double, _ cycle: BillingCycle, start: Int, renews: Int, currency code: String = currency, url: String? = nil) -> TrackedItem {
+        func subscription(
+            _ title: String, _ cost: Double, _ cycle: BillingCycle, start: Int, renews: Int,
+            currency code: String = currency, url: String? = nil, isTrial: Bool = false
+        ) -> TrackedItem {
             TrackedItem(
                 title: title, category: .subscription, cost: cost, currencyCode: code,
-                startDate: day(start), expirationDate: day(renews), billingCycle: cycle, cancellationURL: url
+                startDate: day(start), expirationDate: day(renews), billingCycle: cycle, cancellationURL: url,
+                trialEndDate: isTrial ? day(renews) : nil
             )
         }
         func warranty(_ title: String, _ cost: Double, retailer: String, serial: String, start: Int, expires: Int, currency code: String = currency) -> TrackedItem {
@@ -79,6 +83,7 @@ enum DemoDataFactory {
                 subscription("Spotify Duo", 14.99, .monthly, start: -90, renews: 9, url: "https://www.spotify.com/account"),
                 subscription("iCloud+ 2TB", 119.88, .yearly, start: -120, renews: 245),
                 subscription("Xbox Game Pass", 49.99, .quarterly, start: -40, renews: 50),
+                subscription("YouTube Premium", 13.99, .monthly, start: -3, renews: 4, url: "https://www.youtube.com/paid_memberships", isTrial: true),
                 warranty("MacBook Pro 14\"", 2499, retailer: "Apple Store", serial: "C02XK1ABCD12", start: -300, expires: 430),
                 warranty("Dyson V15 Detect", 749, retailer: "Dyson", serial: "DY-V15-88213", start: -100, expires: 630),
                 warranty("LG C3 OLED 65\"", 1799, retailer: "Best Buy", serial: "LGC3-65-4471", start: -500, expires: 230)

@@ -21,6 +21,36 @@ nonisolated struct ItemSnapshot: Sendable, Hashable, Identifiable {
     let expirationDate: Date
     let billingCycle: BillingCycle
     let isNotificationEnabled: Bool
+    let trialEndDate: Date?
+
+    init(
+        id: UUID,
+        title: String,
+        category: ItemCategory,
+        cost: Double,
+        currencyCode: String,
+        expirationDate: Date,
+        billingCycle: BillingCycle,
+        isNotificationEnabled: Bool,
+        trialEndDate: Date? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.category = category
+        self.cost = cost
+        self.currencyCode = currencyCode
+        self.expirationDate = expirationDate
+        self.billingCycle = billingCycle
+        self.isNotificationEnabled = isNotificationEnabled
+        self.trialEndDate = trialEndDate
+    }
+
+    /// The upcoming charge is the one that ends a free trial. After the subscription rolls forward past it,
+    /// the next charge is a regular renewal.
+    func isInTrial(calendar: Calendar = .current) -> Bool {
+        guard category == .subscription, let trialEndDate else { return false }
+        return calendar.isDate(trialEndDate, inSameDayAs: expirationDate)
+    }
 
     var monthlyCost: Double {
         category == .subscription ? billingCycle.monthlyEquivalent(of: cost) : 0

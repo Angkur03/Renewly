@@ -120,8 +120,10 @@ nonisolated final class NotificationManager: NotificationScheduling {
     ) -> [ScheduledAlert] {
         let currentDate = now()
         let expirationDay = calendar.startOfDay(for: item.expirationDate)
+        let isTrial = item.isInTrial(calendar: calendar)
+        let offsets = Self.offsets(for: preferences, isTrial: isTrial)
 
-        let scheduled = preferences.offsets.compactMap { daysBefore -> ScheduledAlert? in
+        let scheduled = offsets.compactMap { daysBefore -> ScheduledAlert? in
             guard let reminderDay = calendar.date(byAdding: .day, value: -daysBefore, to: expirationDay),
                   let fireDate = calendar.date(bySettingHour: Self.reminderHour, minute: 0, second: 0, of: reminderDay),
                   fireDate > currentDate else {
@@ -130,7 +132,7 @@ nonisolated final class NotificationManager: NotificationScheduling {
             return ScheduledAlert(
                 identifier: Self.identifier(for: item.id, daysBefore: daysBefore),
                 title: item.title,
-                body: Self.body(for: item.category, daysBefore: daysBefore),
+                body: Self.body(for: item.category, daysBefore: daysBefore, isTrial: isTrial),
                 trigger: .date(calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)),
                 itemID: item.id
             )
@@ -167,7 +169,7 @@ nonisolated final class NotificationManager: NotificationScheduling {
         return ScheduledAlert(
             identifier: Self.missedIdentifier(for: item.id),
             title: item.title,
-            body: Self.body(for: item.category, daysBefore: daysLeft),
+            body: Self.body(for: item.category, daysBefore: daysLeft, isTrial: item.isInTrial(calendar: calendar)),
             trigger: .after(seconds: Self.missedReminderDelay),
             itemID: item.id
         )
@@ -185,11 +187,25 @@ nonisolated final class NotificationManager: NotificationScheduling {
         reminderOffsets.map { identifier(for: itemID, daysBefore: $0) } + [missedIdentifier(for: itemID)]
     }
 
-    private static func body(for category: ItemCategory, daysBefore: Int) -> String {
+    /// Days before a trial converts to paid that every plan is warned, on top of the plan's own schedule.
+    static let trialReminderOffset = 1
+
+    /// The plan's reminders, plus the day-before warning for a free trial. Sorted furthest first.
+    static func offsets(for preferences: ReminderPreferences, isTrial: Bool) -> [Int] {
+        guard isTrial, !preferences.offsets.contains(trialReminderOffset) else { return preferences.offsets }
+        return (preferences.offsets + [trialReminderOffset]).sorted(by: >)
+    }
+
+    private static func body(for category: ItemCategory, daysBefore: Int, isTrial: Bool) -> String {
         let timeframe = switch daysBefore {
         case 0: "today"
         case 1: "tomorrow"
         default: "in \(daysBefore) days"
+        }
+        if isTrial {
+            return daysBefore == 0
+                ? "Free trial ends today. Cancel now to avoid being charged."
+                : "Free trial ends \(timeframe). Cancel before then to avoid being charged."
         }
         switch category {
         case .subscription:

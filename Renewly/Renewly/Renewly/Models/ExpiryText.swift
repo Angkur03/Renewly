@@ -21,6 +21,21 @@ nonisolated enum ExpiryText {
         }
     }
 
+    /// e.g. "Trial ends tomorrow", "Trial ends in 5 days".
+    static func trialRelative(days: Int) -> String {
+        switch days {
+        case ..<(-1): "Trial ended \(-days) days ago"
+        case -1: "Trial ended yesterday"
+        case 0: "Trial ends today"
+        case 1: "Trial ends tomorrow"
+        default: "Trial ends in \(days) days"
+        }
+    }
+
+    static func relative(days: Int, category: ItemCategory, isTrial: Bool) -> String {
+        isTrial ? trialRelative(days: days) : relative(days: days, category: category)
+    }
+
     /// Compact badge text: "Today", "Tomorrow", "5d left", "Expired".
     static func badge(days: Int) -> String {
         switch days {

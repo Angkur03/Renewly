@@ -32,6 +32,9 @@ struct ItemCardView: View {
                     .lineLimit(1)
                 HStack(spacing: 6) {
                     expirationBadge(for: snapshot)
+                    if snapshot.isInTrial() {
+                        BadgeView("Trial", systemImage: "gift.fill", tint: .pink)
+                    }
                     if item.isNotificationEnabled {
                         BadgeView("Alerts", systemImage: "bell.fill", tint: .indigo)
                     }
@@ -60,6 +63,8 @@ struct ItemCardView: View {
     private var subtitle: String {
         let date = item.expirationDate.formatted(date: .abbreviated, time: .omitted)
         switch item.category {
+        case .subscription where item.isInTrial():
+            return "Free trial · first charge \(date)"
         case .subscription:
             return "\(item.billingCycle.title) · renews \(date)"
         case .warranty:

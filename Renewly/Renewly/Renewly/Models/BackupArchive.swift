@@ -34,6 +34,8 @@ nonisolated struct BackupItem: Codable, Equatable, Sendable {
     let createdAt: Date
     /// JPEG bytes, base64-encoded in the JSON.
     let receiptImage: Data?
+    /// Added in app version 1.1; files from earlier versions decode it as `nil`.
+    var trialEndDate: Date? = nil
 }
 
 nonisolated enum BackupError: Error, Equatable, Sendable {

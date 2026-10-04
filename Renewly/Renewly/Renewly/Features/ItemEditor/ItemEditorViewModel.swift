@@ -18,6 +18,7 @@ final class ItemEditorViewModel {
     static let maxFieldLength = 120
     static let maxCost: Double = 1_000_000_000
     static let defaultWarrantyYears = 1
+    static let defaultTrialDays = 7
 
     var category: ItemCategory {
         didSet { refreshSuggestedExpiration() }
@@ -31,6 +32,10 @@ final class ItemEditorViewModel {
     /// Use `setExpirationDate(_:)` for user edits so the suggested date stops tracking the start date.
     var expirationDate: Date
     var billingCycle: BillingCycle {
+        didSet { refreshSuggestedExpiration() }
+    }
+    /// The next renewal date is when the free trial converts to paid.
+    var isFreeTrial: Bool {
         didSet { refreshSuggestedExpiration() }
     }
     var serialNumber: String
@@ -85,6 +90,7 @@ final class ItemEditorViewModel {
         retailer = item?.retailer ?? ""
         cancellationURL = item?.cancellationURL ?? ""
         isNotificationEnabled = item?.isNotificationEnabled ?? false
+        isFreeTrial = item?.isInTrial(calendar: calendar) ?? false
     }
 
     var isEditing: Bool { item != nil }
@@ -96,9 +102,12 @@ final class ItemEditorViewModel {
         expirationDate = date
     }
 
-    /// Subscription: the first renewal after the start date that is not in the past. Warranty: one year after purchase.
+    /// Subscription: the first renewal after the start date that is not in the past (a week after it for a free
+    /// trial). Warranty: one year after purchase.
     var suggestedExpirationDate: Date {
         switch category {
+        case .subscription where isFreeTrial:
+            return calendar.date(byAdding: .day, value: Self.defaultTrialDays, to: startDate) ?? startDate
         case .subscription:
             let firstRenewal = calendar.date(byAdding: .month, value: billingCycle.monthsPerCycle, to: startDate) ?? startDate
             return billingCycle.nextRenewal(from: firstRenewal, onOrAfter: now, calendar: calendar)
@@ -120,7 +129,25 @@ final class ItemEditorViewModel {
     var rolloverHint: String? {
         guard category == .subscription, isExpirationInPast else { return nil }
         let date = effectiveExpirationDate.formatted(date: .abbreviated, time: .omitted)
+        if isFreeTrial {
+            return "That trial has already ended, so it will be saved as a paid subscription renewing \(date)."
+        }
         return "That date has passed, so it will be saved as the next renewal: \(date)."
+    }
+
+    var trialHint: String? {
+        guard category == .subscription, isFreeTrial, !isExpirationInPast else { return nil }
+        return "You'll get a reminder the day before the trial ends, so you can cancel before you're charged."
+    }
+
+    var expirationLabel: String {
+        category == .subscription && isFreeTrial ? "Trial ends" : category.expirationLabel
+    }
+
+    /// Stored as the first charge date; a trial date that already passed is saved as a regular subscription.
+    private var trialEndDateToSave: Date? {
+        guard category == .subscription, isFreeTrial, !isExpirationInPast else { return nil }
+        return expirationDate
     }
 
     /// Reminders for a warranty that has already ended would never fire.
@@ -262,6 +289,11 @@ final class ItemEditorViewModel {
             filled.append("billing cycle")
         }
 
+        if !isEditing, category == .subscription, scan.isFreeTrial, !isFreeTrial {
+            isFreeTrial = true
+            filled.append("free trial")
+        }
+
         if !isEditing, let purchaseDate = scan.purchaseDate,
            !calendar.isDate(purchaseDate, inSameDayAs: startDate) {
             startDate = purchaseDate
@@ -276,7 +308,7 @@ final class ItemEditorViewModel {
 
         if !hasEditedExpiration, let expiration = scannedExpiration(from: scan), expiration >= startDate {
             setExpirationDate(expiration)
-            filled.append(category.expirationLabel.lowercased())
+            filled.append(expirationLabel.lowercased())
         }
 
         return filled
@@ -412,6 +444,7 @@ final class ItemEditorViewModel {
         target.isNotificationEnabled = isNotificationEnabled
         target.receiptImagePath = receiptPath
 
+        target.trialEndDate = trialEndDateToSave
         switch category {
         case .subscription:
             target.billingCycle = billingCycle

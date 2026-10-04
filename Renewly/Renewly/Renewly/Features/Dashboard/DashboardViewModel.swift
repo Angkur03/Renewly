@@ -42,6 +42,7 @@ nonisolated struct DashboardSummary: Equatable, Sendable {
         let title: String
         let category: ItemCategory
         let daysLeft: Int
+        var isTrial = false
     }
 
     let currencyCode: String
@@ -72,7 +73,14 @@ nonisolated struct DashboardSummary: Equatable, Sendable {
             upcoming
                 .filter { $0.category == category }
                 .min { $0.expirationDate < $1.expirationDate }
-                .map { NextUp(title: $0.title, category: category, daysLeft: $0.daysUntilExpiration(from: now, calendar: calendar)) }
+                .map {
+                    NextUp(
+                        title: $0.title,
+                        category: category,
+                        daysLeft: $0.daysUntilExpiration(from: now, calendar: calendar),
+                        isTrial: $0.isInTrial(calendar: calendar)
+                    )
+                }
         }
         return DashboardSummary(
             currencyCode: currencyCode,

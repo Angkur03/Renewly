@@ -26,6 +26,9 @@ final class TrackedItem {
     /// Path relative to Application Support; the container path can change between installs.
     var receiptImagePath: String?
     var createdAt: Date
+    /// When a subscription's free trial converts to paid. Set to the first charge date when the item is saved as
+    /// a trial; once the subscription rolls past it, the trial is over.
+    var trialEndDate: Date?
 
     init(
         id: UUID = UUID(),
@@ -41,7 +44,8 @@ final class TrackedItem {
         billingCycle: BillingCycle = .monthly,
         cancellationURL: String? = nil,
         receiptImagePath: String? = nil,
-        createdAt: Date = .now
+        createdAt: Date = .now,
+        trialEndDate: Date? = nil
     ) {
         self.id = id
         self.title = title
@@ -57,6 +61,7 @@ final class TrackedItem {
         self.cancellationURL = cancellationURL
         self.receiptImagePath = receiptImagePath
         self.createdAt = createdAt
+        self.trialEndDate = trialEndDate
     }
 
     var category: ItemCategory {
@@ -78,8 +83,13 @@ final class TrackedItem {
             currencyCode: currencyCode,
             expirationDate: expirationDate,
             billingCycle: billingCycle,
-            isNotificationEnabled: isNotificationEnabled
+            isNotificationEnabled: isNotificationEnabled,
+            trialEndDate: category == .subscription ? trialEndDate : nil
         )
+    }
+
+    func isInTrial(calendar: Calendar = .current) -> Bool {
+        snapshot.isInTrial(calendar: calendar)
     }
 
     var validCancellationURL: URL? {

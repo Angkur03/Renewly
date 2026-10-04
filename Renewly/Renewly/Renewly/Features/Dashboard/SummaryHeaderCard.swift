@@ -86,7 +86,13 @@ struct SummaryHeaderCard: View {
         let isUrgent = nextUp.daysLeft <= 3
         let isWarranty = nextUp.category == .warranty
         let tint: Color = isUrgent ? .orange : (isWarranty ? .green : .accentColor)
-        let icon = isUrgent ? "bell.badge.fill" : (isWarranty ? "checkmark.shield.fill" : "arrow.triangle.2.circlepath")
+        let icon = if isUrgent {
+            "bell.badge.fill"
+        } else if isWarranty {
+            "checkmark.shield.fill"
+        } else {
+            nextUp.isTrial ? "gift.fill" : "arrow.triangle.2.circlepath"
+        }
         return HStack(spacing: 10) {
             Image(systemName: icon)
                 .foregroundStyle(tint)
@@ -102,7 +108,7 @@ struct SummaryHeaderCard: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 8)
-            Text(ExpiryText.relative(days: nextUp.daysLeft, category: nextUp.category))
+            Text(ExpiryText.relative(days: nextUp.daysLeft, category: nextUp.category, isTrial: nextUp.isTrial))
                 .appFont(.caption)
                 .fontWeight(.semibold)
                 .foregroundStyle(isUrgent ? Color.orange : Color.secondary)
@@ -155,7 +161,7 @@ private struct TrailingIconLabelStyle: LabelStyle {
                 subscriptionCount: 2,
                 activeWarrantyCount: 1,
                 excludedItemCount: 1,
-                nextRenewal: .init(title: "Netflix", category: .subscription, daysLeft: 2),
+                nextRenewal: .init(title: "Netflix", category: .subscription, daysLeft: 2, isTrial: true),
                 nextWarranty: .init(title: "MacBook Pro", category: .warranty, daysLeft: 45)
             )
         )
