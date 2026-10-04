@@ -125,17 +125,30 @@ struct NotificationManagerTests {
         let active: Set<UUID> = [itemID, UUID(), UUID()]
 
         try await manager.schedule(for: makeItem(id: itemID, daysUntilExpiration: 60), activeAlertItemIDs: active, isPro: false)
-        #expect(await center.added.map(\.identifier) == ["\(itemID.uuidString)-3d"])
+        #expect(await center.added.map(\.identifier) == ["\(itemID.uuidString)-7d"])
     }
 
-    @Test("Free plan schedules only the 3-day reminder, whatever is chosen in Settings")
-    func freePlanGetsThreeDayOnly() async throws {
+    @Test("Free plan schedules only the 7-day reminder, whatever is chosen in Settings")
+    func freePlanGetsSevenDayOnly() async throws {
         let center = FakeNotificationCenter()
         let manager = makeManager(center: center)
         let item = makeItem(daysUntilExpiration: 60)
 
         try await manager.schedule(for: item, activeAlertItemIDs: [], isPro: false)
-        #expect(await center.added.map(\.identifier) == ["\(item.id.uuidString)-3d"])
+        #expect(await center.added.map(\.identifier) == ["\(item.id.uuidString)-7d"])
+    }
+
+    @Test("Free plan saving inside the last 7 days delivers one alert right away", arguments: [5, 2, 0])
+    func freePlanCatchUpAlert(daysLeft: Int) {
+        let manager = makeManager(center: FakeNotificationCenter())
+        let item = makeItem(daysUntilExpiration: daysLeft)
+        let free = ReminderPreferences().limited(isPro: false)
+
+        let alerts = manager.alerts(for: item, preferences: free, deliverMissedReminder: true)
+
+        #expect(alerts.map(\.identifier) == [NotificationManager.missedIdentifier(for: item.id)])
+        #expect(manager.alerts(for: makeItem(daysUntilExpiration: 10), preferences: free, deliverMissedReminder: true)
+            .allSatisfy { !$0.identifier.hasSuffix("-now") })
     }
 
     @Test("Pro users have no quota")

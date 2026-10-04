@@ -66,7 +66,7 @@ nonisolated protocol NotificationScheduling: Sendable {
     func requestAuthorization() async throws(NotificationError) -> Bool
     func canEnableAlerts(for itemID: UUID, activeAlertItemIDs: Set<UUID>, isPro: Bool) -> Bool
     /// Replaces the item's pending reminders. When reminders are switched off in Settings this only cancels.
-    /// - Parameter deliverMissedReminder: When the item is already inside its final 3 days and today's
+    /// - Parameter deliverMissedReminder: When the item is already inside its catch-up window and today's
     ///   reminder time has passed, also deliver one alert right away. Use for explicit user saves only,
     ///   so background resyncs never repeat it.
     func schedule(

@@ -58,7 +58,7 @@ struct ProStatusCard: View {
 
     private var detail: String {
         guard isPro else {
-            return "3-day reminders for up to \(NotificationManager.freeAlertLimit) items. Try Pro free for 7 days: unlimited reminders, insights and PDF export."
+            return "7-day reminders for up to \(NotificationManager.freeAlertLimit) items. Try Pro free for 7 days: unlimited reminders, insights and PDF export."
         }
         guard let date = subscription?.expirationDate else {
             return "Unlimited reminders, insights and PDF export are unlocked."

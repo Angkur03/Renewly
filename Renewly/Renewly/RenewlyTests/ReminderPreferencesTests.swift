@@ -20,13 +20,26 @@ struct ReminderPreferencesTests {
         #expect(preferences.scheduleDescription == "30, 7, 3 and 1 day before")
     }
 
-    @Test("Free plan is limited to the 3-day reminder; Pro keeps the chosen schedule")
+    @Test("Free plan is limited to the 7-day reminder; Pro keeps the chosen schedule")
     func limitedByPlan() {
-        let chosen = ReminderPreferences(offsets: [30, 7, 1])
+        let chosen = ReminderPreferences(offsets: [30, 1])
         #expect(chosen.limited(isPro: true) == chosen)
-        #expect(chosen.limited(isPro: false).offsets == [3])
-        #expect(chosen.limited(isPro: false).scheduleDescription == "3 days before")
+        #expect(chosen.limited(isPro: false).offsets == [7])
+        #expect(chosen.limited(isPro: false).scheduleDescription == "7 days before")
         #expect(!ReminderPreferences(isEnabled: false).limited(isPro: false).isEnabled)
+    }
+
+    @Test("Each plan shows exactly one always-on reminder")
+    func alwaysOnPerPlan() {
+        #expect(ReminderPreferences.availableOffsets.filter { ReminderPreferences.isAlwaysOn($0, isPro: false) } == [7])
+        #expect(ReminderPreferences.availableOffsets.filter { ReminderPreferences.isAlwaysOn($0, isPro: true) } == [3])
+    }
+
+    @Test("Catch-up window is 3 days on Pro and 7 on the free plan")
+    func catchUpWindow() {
+        #expect(ReminderPreferences().catchUpWindow == 3)
+        #expect(ReminderPreferences(offsets: [30]).catchUpWindow == 3)
+        #expect(ReminderPreferences().limited(isPro: false).catchUpWindow == 7)
     }
 
     @Test("The 3-day reminder cannot be removed")

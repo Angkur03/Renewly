@@ -154,7 +154,7 @@ struct ItemEditorView: View {
         if isPro {
             return base
         }
-        return "\(base) The free plan covers up to \(NotificationManager.freeAlertLimit) items. Pro adds unlimited items and 30, 7 and 1 day alerts."
+        return "\(base) The free plan covers up to \(NotificationManager.freeAlertLimit) items. Pro adds unlimited items and 30, 3 and 1 day alerts."
     }
 
     private func subscriptionSection(viewModel: ItemEditorViewModel) -> some View {

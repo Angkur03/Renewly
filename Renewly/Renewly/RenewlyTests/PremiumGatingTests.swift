@@ -68,7 +68,7 @@ struct PremiumGatingTests {
         let free = SettingsViewModel(entitlements: MockEntitlementService(isPro: false), notifications: MockNotificationScheduler())
         let pro = SettingsViewModel(entitlements: MockEntitlementService(isPro: true), notifications: MockNotificationScheduler())
 
-        #expect(ReminderPreferences.availableOffsets.filter { free.isLocked(offset: $0) } == [30, 7, 1])
+        #expect(ReminderPreferences.availableOffsets.filter { free.isLocked(offset: $0) } == [30, 3, 1])
         #expect(!ReminderPreferences.availableOffsets.contains { pro.isLocked(offset: $0) })
     }
 

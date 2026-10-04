@@ -137,22 +137,29 @@ nonisolated final class NotificationManager: NotificationScheduling {
         }
 
         guard deliverMissedReminder,
-              let missed = missedReminder(for: item, expirationDay: expirationDay, now: currentDate, scheduled: scheduled) else {
+              let missed = missedReminder(
+                  for: item,
+                  expirationDay: expirationDay,
+                  now: currentDate,
+                  window: preferences.catchUpWindow,
+                  scheduled: scheduled
+              ) else {
             return scheduled
         }
         return scheduled + [missed]
     }
 
-    /// Inside the final 3 days, a reminder whose 9:00 slot already passed would never fire,
-    /// so the user gets one alert right away instead.
+    /// Inside the plan's catch-up window (3 days on Pro, 7 on free), a reminder whose 9:00 slot already
+    /// passed would never fire, so the user gets one alert right away instead.
     private func missedReminder(
         for item: ItemSnapshot,
         expirationDay: Date,
         now currentDate: Date,
+        window: Int,
         scheduled: [ScheduledAlert]
     ) -> ScheduledAlert? {
         guard let daysLeft = calendar.dateComponents([.day], from: calendar.startOfDay(for: currentDate), to: expirationDay).day,
-              (0...ReminderPreferences.requiredOffset).contains(daysLeft) else {
+              (0...window).contains(daysLeft) else {
             return nil
         }
         let todaysIdentifier = Self.identifier(for: item.id, daysBefore: daysLeft)

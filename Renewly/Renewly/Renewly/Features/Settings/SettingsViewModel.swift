@@ -34,7 +34,11 @@ final class SettingsViewModel {
     var isSystemPermissionDenied: Bool { authorization == .denied }
 
     func isLocked(offset: Int) -> Bool {
-        !isPro && !ReminderPreferences.isRequired(offset)
+        !isPro && offset != ReminderPreferences.freeOffset
+    }
+
+    func isAlwaysOn(offset: Int) -> Bool {
+        ReminderPreferences.isAlwaysOn(offset, isPro: isPro)
     }
 
     func refreshAuthorization() async {

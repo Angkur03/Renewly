@@ -31,7 +31,7 @@ nonisolated enum ProFeature: String, CaseIterable, Identifiable, Sendable {
         case .unlimitedReminders:
             "Alerts for every subscription and warranty, not just \(NotificationManager.freeAlertLimit)."
         case .extraReminders:
-            "Add 30, 7 and 1 day alerts on top of the 3-day reminder."
+            "Add 30, 3 and 1 day alerts on top of the 7-day reminder."
         case .insights:
             "Monthly and yearly costs, a 12-month forecast and where your money goes."
         case .pdfExport:

@@ -162,8 +162,10 @@ struct SettingsView: View {
         guard remindersEnabled else {
             return "No reminders will be sent. Items keep their reminder setting and resume when you turn this back on."
         }
-        let base = "Alerts arrive at 9:00 AM. The 3-day reminder is always included, so you are warned before every renewal or warranty ends."
-        return viewModel.isPro ? base : "\(base) Renewly Pro adds 30, 7 and 1 day alerts."
+        guard viewModel.isPro else {
+            return "Alerts arrive at 9:00 AM. The free plan reminds you 7 days before every renewal or warranty ends. Renewly Pro adds 30, 3 and 1 day alerts."
+        }
+        return "Alerts arrive at 9:00 AM. The 3-day reminder is always included, so you are warned before every renewal or warranty ends."
     }
 
     @ViewBuilder
@@ -205,22 +207,22 @@ struct SettingsView: View {
     }
 
     private func offsetToggle(_ offset: Int) -> some View {
-        let isRequired = ReminderPreferences.isRequired(offset)
+        let isAlwaysOn = viewModel.isAlwaysOn(offset: offset)
         let binding = Binding<Bool>(
-            get: { isRequired || ReminderPreferences.decode(reminderOffsetsRaw).contains(offset) },
+            get: { isAlwaysOn || ReminderPreferences.decode(reminderOffsetsRaw).contains(offset) },
             set: { reminderOffsetsRaw = ReminderPreferences.toggling(offset, isOn: $0, in: reminderOffsetsRaw) }
         )
         return Toggle(isOn: binding) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(ReminderPreferences.title(for: offset))
-                if isRequired {
-                    Text("Always on")
+                if isAlwaysOn {
+                    Text(viewModel.isPro ? "Always on" : "Included in the free plan")
                         .appFont(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
         }
-        .disabled(isRequired)
+        .disabled(isAlwaysOn)
         .padding(.leading, 8)
     }
 }

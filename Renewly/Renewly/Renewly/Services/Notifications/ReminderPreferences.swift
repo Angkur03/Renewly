@@ -8,10 +8,12 @@
 
 import Foundation
 
-/// User-controlled reminder settings. The 3-day reminder is always part of the schedule.
+/// User-controlled reminder settings. On Pro the 3-day reminder is always part of the schedule;
+/// the free plan gets only the 7-day reminder.
 nonisolated struct ReminderPreferences: Equatable, Sendable {
     static let availableOffsets = [30, 7, 3, 1]
     static let requiredOffset = 3
+    static let freeOffset = 7
     static let defaultOffsetsRaw = encode(Set(availableOffsets))
 
     let isEnabled: Bool
@@ -19,8 +21,12 @@ nonisolated struct ReminderPreferences: Equatable, Sendable {
     let offsets: [Int]
 
     init(isEnabled: Bool = true, offsets: Set<Int> = Set(availableOffsets)) {
+        self.init(isEnabled: isEnabled, exactOffsets: offsets.union([Self.requiredOffset]))
+    }
+
+    private init(isEnabled: Bool, exactOffsets: Set<Int>) {
         self.isEnabled = isEnabled
-        self.offsets = Self.availableOffsets.filter { offsets.contains($0) || $0 == Self.requiredOffset }
+        self.offsets = Self.availableOffsets.filter { exactOffsets.contains($0) }
     }
 
     init(isEnabled: Bool, offsetsRaw: String) {
@@ -40,13 +46,25 @@ nonisolated struct ReminderPreferences: Equatable, Sendable {
         return "\(list) \(unit) before"
     }
 
-    /// The schedule a plan actually gets: free users only receive the 3-day reminder.
+    /// The schedule a plan actually gets: free users only receive the 7-day reminder.
     func limited(isPro: Bool) -> ReminderPreferences {
-        isPro ? self : ReminderPreferences(isEnabled: isEnabled, offsets: [Self.requiredOffset])
+        isPro ? self : ReminderPreferences(isEnabled: isEnabled, exactOffsets: [Self.freeOffset])
     }
 
+    /// Days before expiry within which saving an item delivers one alert right away, because a reminder
+    /// whose time already passed would never fire: the 3-day reminder on Pro, the 7-day one on the free plan.
+    var catchUpWindow: Int {
+        offsets.contains(Self.requiredOffset) ? Self.requiredOffset : (offsets.last ?? Self.requiredOffset)
+    }
+
+    /// The Pro reminder that cannot be switched off.
     static func isRequired(_ offset: Int) -> Bool {
         offset == requiredOffset
+    }
+
+    /// Reminders shown as permanently on for the plan: 3 days on Pro, 7 days on the free plan.
+    static func isAlwaysOn(_ offset: Int, isPro: Bool) -> Bool {
+        offset == (isPro ? requiredOffset : freeOffset)
     }
 
     static func title(for offset: Int) -> String {
