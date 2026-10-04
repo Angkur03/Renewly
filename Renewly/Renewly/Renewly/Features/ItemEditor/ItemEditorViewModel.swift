@@ -62,6 +62,7 @@ final class ItemEditorViewModel {
     @ObservationIgnored private let now: Date
     @ObservationIgnored private let calendar: Calendar
     @ObservationIgnored private let dependencies: AppDependencies
+    @ObservationIgnored private let catalog: ServiceCatalog
     @ObservationIgnored private let logger = Logger(subsystem: "com.beleiveinAllahRenewly.Renewly", category: "ItemEditor")
 
     init(
@@ -69,10 +70,12 @@ final class ItemEditorViewModel {
         defaultCurrency: String,
         dependencies: AppDependencies,
         now: Date = .now,
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        catalog: ServiceCatalog = .shared
     ) {
         self.item = item
         self.dependencies = dependencies
+        self.catalog = catalog
         self.now = now
         self.calendar = calendar
         hasEditedExpiration = item != nil
@@ -94,6 +97,25 @@ final class ItemEditorViewModel {
     }
 
     var isEditing: Bool { item != nil }
+
+    // MARK: Service catalog
+
+    var canBrowseServices: Bool { !isEditing && category == .subscription }
+
+    /// Popular services matching the name being typed on a new subscription.
+    var serviceSuggestions: [ServiceTemplate] {
+        canBrowseServices ? catalog.suggestions(for: title) : []
+    }
+
+    /// Fills the name and usual plan. A cancellation link the user already typed is kept.
+    func applyService(_ service: ServiceTemplate) {
+        category = .subscription
+        title = service.name
+        billingCycle = service.billingCycle
+        if let url = service.manageURL, Self.sanitized(cancellationURL, maxLength: 2048) == nil {
+            cancellationURL = url
+        }
+    }
 
     // MARK: Dates
 

@@ -52,7 +52,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Renewly.entitlements,
 			);
 			target = AEBD2B3430721F8200A99A6C /* Renewly */;
 		};
@@ -60,7 +59,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				RenewlyWidget.entitlements,
 			);
 			target = AEBD3A0830721F8200A99A6C /* RenewlyWidgetExtension */;
 		};

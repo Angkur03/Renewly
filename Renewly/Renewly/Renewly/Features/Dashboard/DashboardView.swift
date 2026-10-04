@@ -150,6 +150,13 @@ struct DashboardView: View {
         .sheet(item: $editorTarget) { target in
             ItemEditorView(item: target.item, defaultCurrency: primaryCurrency, dependencies: dependencies)
         }
+        #if DEBUG
+        .task {
+            if UserDefaults.standard.string(forKey: "open_route") == "new_item" {
+                editorTarget = .new
+            }
+        }
+        #endif
         .rigidHaptic(trigger: viewModel.interactionCount)
         .errorAlert(message: $viewModel.errorMessage)
     }

@@ -20,6 +20,7 @@ struct ItemEditorView: View {
 
     @State private var viewModel: ItemEditorViewModel
     @State private var saveTrigger = 0
+    @State private var isServicePickerPresented = false
 
     init(item: TrackedItem?, defaultCurrency: String, dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -47,8 +48,24 @@ struct ItemEditorView: View {
                 }
 
                 Section("Details") {
+                    if viewModel.canBrowseServices {
+                        Button {
+                            isServicePickerPresented = true
+                        } label: {
+                            Label("Choose a popular service", systemImage: "square.grid.2x2")
+                        }
+                    }
                     TextField(viewModel.category == .subscription ? "Service name" : "Product name", text: $viewModel.title)
                         .textInputAutocapitalization(.words)
+                    ForEach(viewModel.serviceSuggestions) { service in
+                        Button {
+                            viewModel.applyService(service)
+                        } label: {
+                            ServiceRow(service: service)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Fills the name, plan and cancel link")
+                    }
                     HStack {
                         Text("Price")
                         Spacer()
@@ -130,6 +147,9 @@ struct ItemEditorView: View {
             .task {
                 viewModel.applyDefaultReminder(activeAlertItemIDs: activeAlertItemIDs)
                 await viewModel.loadExistingReceipt()
+            }
+            .sheet(isPresented: $isServicePickerPresented) {
+                ServicePickerView { viewModel.applyService($0) }
             }
             .sheet(isPresented: $viewModel.isPaywallPresented) {
                 PaywallView(entitlements: dependencies.entitlements, highlighting: .unlimitedReminders)
