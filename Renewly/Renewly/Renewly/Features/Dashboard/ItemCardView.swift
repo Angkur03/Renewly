@@ -30,14 +30,10 @@ struct ItemCardView: View {
                     .appFont(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
-                HStack(spacing: 6) {
-                    expirationBadge(for: snapshot)
-                    if snapshot.isInTrial() {
-                        BadgeView("Trial", systemImage: "gift.fill", tint: .pink)
-                    }
-                    if item.isNotificationEnabled {
-                        BadgeView("Alerts", systemImage: "bell.fill", tint: .indigo)
-                    }
+                ViewThatFits(in: .horizontal) {
+                    badgeRow(for: snapshot, compactAlerts: false, compactTrial: false)
+                    badgeRow(for: snapshot, compactAlerts: true, compactTrial: false)
+                    badgeRow(for: snapshot, compactAlerts: true, compactTrial: true)
                 }
             }
 
@@ -73,6 +69,18 @@ struct ItemCardView: View {
                 return String(localized: "\(retailer) · until \(date)")
             }
             return String(localized: "Covered until \(date)")
+        }
+    }
+
+    private func badgeRow(for snapshot: ItemSnapshot, compactAlerts: Bool, compactTrial: Bool) -> some View {
+        HStack(spacing: 6) {
+            expirationBadge(for: snapshot)
+            if snapshot.isInTrial() {
+                BadgeView("Trial", systemImage: "gift.fill", tint: .pink).compact(compactTrial)
+            }
+            if item.isNotificationEnabled {
+                BadgeView("Alerts", systemImage: "bell.fill", tint: .indigo).compact(compactAlerts)
+            }
         }
     }
 

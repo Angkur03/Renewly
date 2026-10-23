@@ -186,11 +186,12 @@ struct PaywallView: View {
                     .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(plan.kind.title)
-                            .appFont(.headline)
-                        if plan.kind == .yearly, let savings = viewModel.yearlySavingsPercent {
-                            BadgeView("Best value · Save \(savings)%", tint: .green)
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 8) {
+                            planTitle(plan)
+                        }
+                        VStack(alignment: .leading, spacing: 4) {
+                            planTitle(plan)
                         }
                     }
                     if let days = plan.freeTrialDays {
@@ -225,6 +226,15 @@ struct PaywallView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    @ViewBuilder
+    private func planTitle(_ plan: ProPlan) -> some View {
+        Text(plan.kind.title)
+            .appFont(.headline)
+        if plan.kind == .yearly, let savings = viewModel.yearlySavingsPercent {
+            BadgeView("Best value · Save \(savings)%", tint: .green)
+        }
     }
 
     private var actions: some View {
