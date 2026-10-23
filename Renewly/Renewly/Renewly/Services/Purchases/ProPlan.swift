@@ -12,7 +12,7 @@ nonisolated enum ProPlanKind: String, CaseIterable, Identifiable, Sendable {
     case monthly
     case yearly
 
-    static let productIDPrefix = "com.beleiveinAllahRenewly.Renewly.pro."
+    static let productIDPrefix = "com.applab.Renewly.pro."
 
     var id: String { rawValue }
     var productID: String { Self.productIDPrefix + rawValue }

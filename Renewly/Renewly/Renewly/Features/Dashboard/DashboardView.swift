@@ -228,7 +228,8 @@ struct DashboardView: View {
         let summary = SummaryHeaderCard(
             summary: viewModel.summary(for: items, currencyCode: primaryCurrency, now: now),
             showsInsightsHint: !items.isEmpty,
-            isInsightsLocked: !dependencies.entitlements.isPro
+            isInsightsLocked: !dependencies.entitlements.isPro,
+            onOpenItem: openDetails(itemID:)
         )
         if items.isEmpty {
             summary
@@ -240,6 +241,12 @@ struct DashboardView: View {
             }
             .accessibilityHint("Opens spending insights")
         }
+    }
+
+    private func openDetails(itemID: UUID) {
+        guard let item = items.first(where: { $0.id == itemID }) else { return }
+        viewModel.registerInteraction()
+        onOpenDetails(item)
     }
 
     private func sectionHeader(_ title: LocalizedStringKey, count: Int, systemImage: String) -> some View {

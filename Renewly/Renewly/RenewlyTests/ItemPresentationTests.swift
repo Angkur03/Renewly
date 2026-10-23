@@ -160,6 +160,13 @@ struct DashboardSectionsTests {
         #expect(summary.nextWarranty?.daysLeft == 5)
     }
 
+    @Test("Next up points at the item it names, so tapping it opens that item")
+    func nextUpItemIDs() {
+        let summary = DashboardSummary.make(from: items.map(\.snapshot), currencyCode: "USD", now: .now)
+        #expect(summary.nextRenewal?.itemID == items.first { $0.title == "Netflix" }?.id)
+        #expect(summary.nextWarranty?.itemID == items.first { $0.title == "MacBook Pro" }?.id)
+    }
+
     @Test("A category with nothing upcoming has no next-up row")
     func nextUpWithoutUpcomingWarranty() {
         let subscriptionsAndExpired = items.filter { $0.title != "MacBook Pro" }.map(\.snapshot)

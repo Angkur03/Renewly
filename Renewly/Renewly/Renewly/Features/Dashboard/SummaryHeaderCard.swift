@@ -12,6 +12,8 @@ struct SummaryHeaderCard: View {
     let summary: DashboardSummary
     var showsInsightsHint = false
     var isInsightsLocked = false
+    /// Makes the next-up rows open their item. Without it the rows are plain text.
+    var onOpenItem: ((UUID) -> Void)? = nil
 
     var body: some View {
         GlassCard(cornerRadius: 28) {
@@ -60,10 +62,10 @@ struct SummaryHeaderCard: View {
                 if summary.nextRenewal != nil || summary.nextWarranty != nil {
                     VStack(spacing: 8) {
                         if let renewal = summary.nextRenewal {
-                            nextUpRow(renewal)
+                            nextUpEntry(renewal)
                         }
                         if let warranty = summary.nextWarranty {
-                            nextUpRow(warranty)
+                            nextUpEntry(warranty)
                         }
                     }
                 }
@@ -80,7 +82,23 @@ struct SummaryHeaderCard: View {
         }
     }
 
-    private func nextUpRow(_ nextUp: DashboardSummary.NextUp) -> some View {
+    /// A plain-style button keeps its own tap area inside the list row, which itself opens Insights.
+    @ViewBuilder
+    private func nextUpEntry(_ nextUp: DashboardSummary.NextUp) -> some View {
+        if let onOpenItem {
+            Button {
+                onOpenItem(nextUp.itemID)
+            } label: {
+                nextUpRow(nextUp, isTappable: true)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Opens the item details")
+        } else {
+            nextUpRow(nextUp, isTappable: false)
+        }
+    }
+
+    private func nextUpRow(_ nextUp: DashboardSummary.NextUp, isTappable: Bool) -> some View {
         let isUrgent = nextUp.daysLeft <= 3
         let isWarranty = nextUp.category == .warranty
         let tint: Color = isUrgent ? .orange : (isWarranty ? .green : .accentColor)
@@ -113,11 +131,18 @@ struct SummaryHeaderCard: View {
                 .foregroundStyle(isUrgent ? Color.orange : Color.secondary)
                 .multilineTextAlignment(.trailing)
                 .fixedSize(horizontal: false, vertical: true)
+            if isTappable {
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
+            }
         }
         .padding(.vertical, 8)
         .padding(.leading, 8)
-        .padding(.trailing, 16)
+        .padding(.trailing, isTappable ? 12 : 16)
         .chipSurface(isSelected: false)
+        .contentShape(Capsule())
         .accessibilityElement(children: .combine)
     }
 
@@ -161,9 +186,10 @@ private struct TrailingIconLabelStyle: LabelStyle {
                 subscriptionCount: 2,
                 activeWarrantyCount: 1,
                 excludedItemCount: 1,
-                nextRenewal: .init(title: "Netflix", category: .subscription, daysLeft: 2, isTrial: true),
-                nextWarranty: .init(title: "MacBook Pro", category: .warranty, daysLeft: 45)
-            )
+                nextRenewal: .init(itemID: UUID(), title: "Netflix", category: .subscription, daysLeft: 2, isTrial: true),
+                nextWarranty: .init(itemID: UUID(), title: "MacBook Pro", category: .warranty, daysLeft: 45)
+            ),
+            onOpenItem: { _ in }
         )
         .padding()
     }

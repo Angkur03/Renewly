@@ -39,6 +39,7 @@ nonisolated enum DashboardFilter: String, CaseIterable, Identifiable, Sendable {
 
 nonisolated struct DashboardSummary: Equatable, Sendable {
     nonisolated struct NextUp: Equatable, Sendable {
+        let itemID: UUID
         let title: String
         let category: ItemCategory
         let daysLeft: Int
@@ -75,6 +76,7 @@ nonisolated struct DashboardSummary: Equatable, Sendable {
                 .min { $0.expirationDate < $1.expirationDate }
                 .map {
                     NextUp(
+                        itemID: $0.id,
                         title: $0.title,
                         category: category,
                         daysLeft: $0.daysUntilExpiration(from: now, calendar: calendar),
