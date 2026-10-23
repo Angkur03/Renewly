@@ -132,7 +132,7 @@ nonisolated struct SpendingInsights: Equatable, Sendable {
         }
         if needsOther {
             let rest = sorted.dropFirst(top.count).reduce(0) { $0 + $1.monthlyCost }
-            result.append(CostShare(title: "Other", monthlyAmount: rest, fraction: rest / total, isOther: true))
+            result.append(CostShare(title: String(localized: "Other"), monthlyAmount: rest, fraction: rest / total, isOther: true))
         }
         return result
     }

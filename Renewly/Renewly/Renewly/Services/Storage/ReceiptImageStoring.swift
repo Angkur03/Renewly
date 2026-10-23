@@ -17,11 +17,11 @@ nonisolated enum ReceiptStorageError: Error, Equatable, Sendable {
 
     var userMessage: String {
         switch self {
-        case .invalidImageData: "The selected image could not be read."
-        case .invalidPath: "The receipt location is invalid."
-        case .writeFailed: "The receipt image could not be saved."
-        case .readFailed: "The saved receipt image could not be loaded."
-        case .deleteFailed: "The old receipt image could not be removed."
+        case .invalidImageData: String(localized: "The selected image could not be read.")
+        case .invalidPath: String(localized: "The receipt location is invalid.")
+        case .writeFailed: String(localized: "The receipt image could not be saved.")
+        case .readFailed: String(localized: "The saved receipt image could not be loaded.")
+        case .deleteFailed: String(localized: "The old receipt image could not be removed.")
         }
     }
 }

@@ -17,13 +17,13 @@ nonisolated enum NotificationError: Error, Equatable, Sendable {
     var userMessage: String {
         switch self {
         case .quotaExceeded(let limit):
-            "The free plan includes reminders for up to \(limit) items. Upgrade to Pro for unlimited reminders."
+            String(localized: "The free plan includes reminders for up to \(limit) items. Upgrade to Pro for unlimited reminders.")
         case .notAuthorized:
-            "Notifications are turned off for Renewly. Enable them in the Settings app to receive reminders."
+            String(localized: "Notifications are turned off for Renewly. Enable them in the Settings app to receive reminders.")
         case .schedulingFailed:
-            "Reminders could not be scheduled. Please try again."
+            String(localized: "Reminders could not be scheduled. Please try again.")
         case .cancelled:
-            "Scheduling reminders was cancelled."
+            String(localized: "Scheduling reminders was cancelled.")
         }
     }
 }

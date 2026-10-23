@@ -51,22 +51,22 @@ struct ProStatusCard: View {
     }
 
     private var title: String {
-        guard isPro else { return "Renewly Free" }
-        guard let subscription else { return "Renewly Pro" }
-        return "Pro · \(subscription.kind.title)"
+        guard isPro else { return String(localized: "Renewly Free") }
+        guard let subscription else { return String(localized: "Renewly Pro") }
+        return String(localized: "Pro · \(subscription.kind.title)")
     }
 
     private var detail: String {
         guard isPro else {
-            return "7-day reminders for up to \(NotificationManager.freeAlertLimit) items. Try Pro free for 7 days: unlimited reminders, insights and PDF export."
+            return String(localized: "7-day reminders for up to \(NotificationManager.freeAlertLimit) items. Try Pro free for 7 days: unlimited reminders, insights and PDF export.")
         }
         guard let date = subscription?.expirationDate else {
-            return "Unlimited reminders, insights and PDF export are unlocked."
+            return String(localized: "Unlimited reminders, insights and PDF export are unlocked.")
         }
         let formatted = date.formatted(date: .abbreviated, time: .omitted)
         return subscription?.isInFreeTrial == true
-            ? "Free trial ends \(formatted). Cancel before then to avoid being charged."
-            : "Current period ends \(formatted)."
+            ? String(localized: "Free trial ends \(formatted). Cancel before then to avoid being charged.")
+            : String(localized: "Current period ends \(formatted).")
     }
 }
 

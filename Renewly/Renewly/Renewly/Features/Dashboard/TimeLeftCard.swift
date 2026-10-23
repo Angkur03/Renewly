@@ -54,16 +54,18 @@ struct TimeLeftCard: View {
     private func caption(for progress: TimeLeftProgress) -> String {
         if progress.daysLeft < 0 {
             return item.category == .warranty
-                ? "Coverage has ended. Keep the receipt in case the retailer offers goodwill repairs."
-                : "This period has ended."
+                ? String(localized: "Coverage has ended. Keep the receipt in case the retailer offers goodwill repairs.")
+                : String(localized: "This period has ended.")
         }
         if isTrial {
             let price = item.cost.formatted(.currency(code: item.currencyCode))
-            return "Free until then. You'll be charged \(price) unless you cancel before it ends."
+            return String(localized: "Free until then. You'll be charged \(price) unless you cancel before it ends.")
         }
-        let period = item.category == .subscription ? "this billing period" : "the warranty"
-        guard progress.totalDays > 0 else { return "Ends today." }
-        return "\(ExpiryText.count(max(progress.daysLeft, 0), "day")) left of \(progress.totalDays) in \(period)"
+        guard progress.totalDays > 0 else { return String(localized: "Ends today.") }
+        let daysLeft = max(progress.daysLeft, 0)
+        return item.category == .subscription
+            ? String(localized: "\(daysLeft) days left of \(progress.totalDays) in this billing period")
+            : String(localized: "\(daysLeft) days left of \(progress.totalDays) in the warranty")
     }
 
     private func symbol(for progress: TimeLeftProgress) -> String {

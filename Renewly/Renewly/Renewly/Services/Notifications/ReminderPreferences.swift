@@ -33,17 +33,13 @@ nonisolated struct ReminderPreferences: Equatable, Sendable {
         self.init(isEnabled: isEnabled, offsets: Self.decode(offsetsRaw))
     }
 
-    /// e.g. "30, 7, 3 and 1 day before"
+    /// e.g. "30, 7, 3, and 1 day before"
     var scheduleDescription: String {
-        let numbers = offsets.map(String.init)
-        let unit = offsets.last == 1 ? "day" : "days"
-        let list: String
-        switch numbers.count {
-        case 0: return "Off"
-        case 1: list = numbers[0]
-        default: list = numbers.dropLast().joined(separator: ", ") + " and " + (numbers.last ?? "")
-        }
-        return "\(list) \(unit) before"
+        guard let last = offsets.last else { return String(localized: "Off") }
+        let list = offsets.map { $0.formatted() }.formatted(.list(type: .and))
+        return last == 1
+            ? String(localized: "\(list) day before", comment: "List of days ending in 1, e.g. 3 and 1 day before")
+            : String(localized: "\(list) days before", comment: "List of days, e.g. 7 and 3 days before")
     }
 
     /// The schedule a plan actually gets: free users only receive the 7-day reminder.
@@ -68,7 +64,7 @@ nonisolated struct ReminderPreferences: Equatable, Sendable {
     }
 
     static func title(for offset: Int) -> String {
-        offset == 1 ? "1 day before" : "\(offset) days before"
+        String(localized: "\(offset) days before")
     }
 
     static func encode(_ offsets: Set<Int>) -> String {

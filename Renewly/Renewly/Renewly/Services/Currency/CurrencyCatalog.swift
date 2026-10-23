@@ -53,10 +53,10 @@ nonisolated struct CurrencyCatalog: Sendable {
 
     /// Codes introduced after some iOS releases shipped, so Foundation may not know their names yet.
     private static let fallbackNames = [
-        "SLE": "Sierra Leonean Leone",
-        "VED": "Venezuelan Digital Bolívar",
-        "XCG": "Caribbean Guilder",
-        "ZWG": "Zimbabwe Gold"
+        "SLE": String(localized: "Sierra Leonean Leone"),
+        "VED": String(localized: "Venezuelan Digital Bolívar"),
+        "XCG": String(localized: "Caribbean Guilder"),
+        "ZWG": String(localized: "Zimbabwe Gold")
     ]
     private static let fallbackSymbols = ["XCG": "Cg", "ZWG": "ZiG", "SLE": "Le"]
 

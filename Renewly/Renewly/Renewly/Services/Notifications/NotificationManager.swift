@@ -98,8 +98,8 @@ nonisolated final class NotificationManager: NotificationScheduling {
         guard try await requestAuthorization() else { throw .notAuthorized }
         let alert = ScheduledAlert(
             identifier: "test-\(UUID().uuidString)",
-            title: "Renewly test reminder",
-            body: "Notifications are working. Real reminders arrive at 9:00 AM.",
+            title: String(localized: "Renewly test reminder"),
+            body: String(localized: "Notifications are working. Real reminders arrive at 9:00 AM."),
             trigger: .after(seconds: TimeInterval(max(seconds, 1)))
         )
         do {
@@ -197,21 +197,26 @@ nonisolated final class NotificationManager: NotificationScheduling {
     }
 
     private static func body(for category: ItemCategory, daysBefore: Int, isTrial: Bool) -> String {
-        let timeframe = switch daysBefore {
-        case 0: "today"
-        case 1: "tomorrow"
-        default: "in \(daysBefore) days"
-        }
         if isTrial {
-            return daysBefore == 0
-                ? "Free trial ends today. Cancel now to avoid being charged."
-                : "Free trial ends \(timeframe). Cancel before then to avoid being charged."
+            return switch daysBefore {
+            case 0: String(localized: "Free trial ends today. Cancel now to avoid being charged.")
+            case 1: String(localized: "Free trial ends tomorrow. Cancel before then to avoid being charged.")
+            default: String(localized: "Free trial ends in \(daysBefore) days. Cancel before then to avoid being charged.")
+            }
         }
         switch category {
         case .subscription:
-            return "Renews \(timeframe). Cancel now if you no longer need it."
+            return switch daysBefore {
+            case 0: String(localized: "Renews today. Cancel now if you no longer need it.")
+            case 1: String(localized: "Renews tomorrow. Cancel now if you no longer need it.")
+            default: String(localized: "Renews in \(daysBefore) days. Cancel now if you no longer need it.")
+            }
         case .warranty:
-            return "Warranty expires \(timeframe). File any claims before it ends."
+            return switch daysBefore {
+            case 0: String(localized: "Warranty expires today. File any claims before it ends.")
+            case 1: String(localized: "Warranty expires tomorrow. File any claims before it ends.")
+            default: String(localized: "Warranty expires in \(daysBefore) days. File any claims before it ends.")
+            }
         }
     }
 }

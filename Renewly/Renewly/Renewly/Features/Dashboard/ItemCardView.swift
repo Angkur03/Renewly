@@ -65,14 +65,14 @@ struct ItemCardView: View {
         switch item.category {
         case .subscription where item.isInTrial():
             let shortDate = item.expirationDate.formatted(.dateTime.day().month(.abbreviated))
-            return "Free trial · first charge \(shortDate)"
+            return String(localized: "Free trial · first charge \(shortDate)")
         case .subscription:
-            return "\(item.billingCycle.title) · renews \(date)"
+            return String(localized: "\(item.billingCycle.title) · renews \(date)")
         case .warranty:
             if let retailer = item.retailer, !retailer.isEmpty {
-                return "\(retailer) · until \(date)"
+                return String(localized: "\(retailer) · until \(date)")
             }
-            return "Covered until \(date)"
+            return String(localized: "Covered until \(date)")
         }
     }
 

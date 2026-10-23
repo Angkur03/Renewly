@@ -23,15 +23,15 @@ nonisolated enum ServiceGroup: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .streaming: "Video streaming"
-        case .music: "Music & audio"
-        case .cloud: "Cloud storage"
-        case .productivity: "Productivity & software"
-        case .ai: "AI assistants"
-        case .gaming: "Gaming"
-        case .news: "News & reading"
-        case .fitness: "Health & fitness"
-        case .lifestyle: "Shopping & lifestyle"
+        case .streaming: String(localized: "Video streaming")
+        case .music: String(localized: "Music & audio")
+        case .cloud: String(localized: "Cloud storage")
+        case .productivity: String(localized: "Productivity & software")
+        case .ai: String(localized: "AI assistants")
+        case .gaming: String(localized: "Gaming")
+        case .news: String(localized: "News & reading")
+        case .fitness: String(localized: "Health & fitness")
+        case .lifestyle: String(localized: "Shopping & lifestyle")
         }
     }
 

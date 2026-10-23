@@ -19,15 +19,8 @@ nonisolated enum ProPlanKind: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .monthly: "Monthly"
-        case .yearly: "Yearly"
-        }
-    }
-
-    var periodNoun: String {
-        switch self {
-        case .monthly: "month"
-        case .yearly: "year"
+        case .monthly: String(localized: "Monthly")
+        case .yearly: String(localized: "Yearly")
         }
     }
 
@@ -48,7 +41,12 @@ nonisolated struct ProPlan: Identifiable, Equatable, Sendable {
 
     var id: String { kind.productID }
 
-    var priceWithPeriod: String { "\(displayPrice)/\(kind.periodNoun)" }
+    var priceWithPeriod: String {
+        switch kind {
+        case .monthly: String(localized: "\(displayPrice)/month", comment: "Plan price, e.g. $2.99/month")
+        case .yearly: String(localized: "\(displayPrice)/year", comment: "Plan price, e.g. $19.99/year")
+        }
+    }
 
     static func savingsPercent(monthlyPrice: Decimal, yearlyPrice: Decimal) -> Int? {
         let annualizedMonthly = monthlyPrice * 12

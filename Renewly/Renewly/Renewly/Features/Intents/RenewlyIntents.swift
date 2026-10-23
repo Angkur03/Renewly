@@ -63,7 +63,7 @@ nonisolated struct ItemEntity: AppEntity, Identifiable {
     init(_ item: ItemSnapshot, now: Date = .now, calendar: Calendar = .current) {
         let days = max(0, item.daysUntilExpiration(from: now, calendar: calendar))
         let timing = item.isExpired(now: now)
-            ? "Expired"
+            ? String(localized: "Expired")
             : WidgetText.relative(days: days, kind: WidgetSnapshotBuilder.kind(of: item, calendar: calendar))
         self.init(id: item.id, title: item.title, subtitle: "\(item.category.title) · \(timing)")
     }

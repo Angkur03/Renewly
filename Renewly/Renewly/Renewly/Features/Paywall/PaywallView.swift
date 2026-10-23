@@ -41,20 +41,20 @@ final class PaywallViewModel {
     }
 
     var purchaseButtonTitle: String {
-        guard let selected else { return "Continue" }
+        guard let selected else { return String(localized: "Continue") }
         if let days = selected.freeTrialDays {
-            return "Start \(days)-day free trial"
+            return String(localized: "Start \(days)-day free trial")
         }
-        return "Subscribe for \(selected.priceWithPeriod)"
+        return String(localized: "Subscribe for \(selected.priceWithPeriod)")
     }
 
     var finePrint: String {
         guard let selected else {
-            return "Subscriptions auto-renew until cancelled. Cancel anytime in Settings."
+            return String(localized: "Subscriptions auto-renew until cancelled. Cancel anytime in Settings.")
         }
-        let renewal = "Auto-renews at \(selected.priceWithPeriod) until cancelled. Cancel anytime in Settings at least 24 hours before the end of the current period."
+        let renewal = String(localized: "Auto-renews at \(selected.priceWithPeriod) until cancelled. Cancel anytime in Settings at least 24 hours before the end of the current period.")
         if let days = selected.freeTrialDays {
-            return "Free for \(days) days, then \(selected.priceWithPeriod). \(renewal)"
+            return String(localized: "Free for \(days) days, then \(selected.priceWithPeriod). \(renewal)")
         }
         return renewal
     }
@@ -76,7 +76,7 @@ final class PaywallViewModel {
         do {
             try await entitlements.restorePurchases()
             if !isPro {
-                errorMessage = "No active Renewly Pro subscription was found for this Apple Account."
+                errorMessage = String(localized: "No active Renewly Pro subscription was found for this Apple Account.")
             }
         } catch {
             errorMessage = error.userMessage
@@ -119,7 +119,7 @@ struct PaywallView: View {
                                     isHighlighted: item == highlightedFeature
                                 )
                             }
-                            feature("lock.shield.fill", title: "Still private", detail: "Your data stays on this device. No account needed.")
+                            feature("lock.shield.fill", title: String(localized: "Still private"), detail: String(localized: "Your data stays on this device. No account needed."))
                         }
                     }
                     planPicker
@@ -198,7 +198,7 @@ struct PaywallView: View {
                             .appFont(.caption)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text("Billed every \(plan.kind.periodNoun)")
+                        Text(plan.kind == .monthly ? "Billed every month" : "Billed every year")
                             .appFont(.caption)
                             .foregroundStyle(.secondary)
                     }

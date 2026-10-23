@@ -18,17 +18,17 @@ nonisolated enum AppTheme: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .system: "System"
-        case .light: "Light"
-        case .dark: "Dark"
+        case .system: String(localized: "System")
+        case .light: String(localized: "Light")
+        case .dark: String(localized: "Dark")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .system: "Clean & adaptive"
-        case .light: "Soft ocean blue"
-        case .dark: "Midnight glass"
+        case .system: String(localized: "Clean & adaptive")
+        case .light: String(localized: "Soft ocean blue")
+        case .dark: String(localized: "Midnight glass")
         }
     }
 

@@ -12,9 +12,16 @@ import SwiftUI
 
 struct InsightsView: View {
     private enum Period: String, CaseIterable, Identifiable {
-        case month = "Per month"
-        case year = "Per year"
+        case month
+        case year
         var id: String { rawValue }
+
+        var title: LocalizedStringKey {
+            switch self {
+            case .month: "Per month"
+            case .year: "Per year"
+            }
+        }
     }
 
     let entitlements: any EntitlementProviding
@@ -118,9 +125,7 @@ struct InsightsView: View {
                     }
                     if insights.excludedItemCount > 0 {
                         Label(
-                            insights.excludedItemCount == 1
-                                ? "1 item in another currency is not included."
-                                : "\(insights.excludedItemCount) items in other currencies are not included.",
+                            "\(insights.excludedItemCount) items in other currencies are not included.",
                             systemImage: "info.circle"
                         )
                         .appFont(.caption)
@@ -139,7 +144,7 @@ struct InsightsView: View {
         GlassCard(cornerRadius: 28) {
             VStack(alignment: .leading, spacing: 14) {
                 Picker("Period", selection: $period.animation(.snappy)) {
-                    ForEach(Period.allCases) { Text($0.rawValue).tag($0) }
+                    ForEach(Period.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
 
@@ -173,7 +178,7 @@ struct InsightsView: View {
         }
     }
 
-    private func statPill(title: String, value: Text, systemImage: String) -> some View {
+    private func statPill(title: LocalizedStringKey, value: Text, systemImage: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: systemImage)
                 .foregroundStyle(Color.accentColor)
@@ -219,7 +224,7 @@ struct InsightsView: View {
                         chargeRow(charge, currency: insights.currencyCode)
                     }
                     if hiddenCount > 0 {
-                        Text("+ \(ExpiryText.count(hiddenCount, "more renewal"))")
+                        Text("+ \(hiddenCount) more renewals")
                             .appFont(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -400,7 +405,7 @@ struct InsightsView: View {
         }
     }
 
-    private func coverageTile(value: Int, title: String, tint: Color) -> some View {
+    private func coverageTile(value: Int, title: LocalizedStringKey, tint: Color) -> some View {
         VStack(spacing: 2) {
             Text(value, format: .number)
                 .appFont(.title2)
@@ -420,7 +425,7 @@ struct InsightsView: View {
 
     // MARK: Helpers
 
-    private func cardHeader<Trailing: View>(_ title: String, systemImage: String, @ViewBuilder trailing: () -> Trailing) -> some View {
+    private func cardHeader<Trailing: View>(_ title: LocalizedStringKey, systemImage: String, @ViewBuilder trailing: () -> Trailing) -> some View {
         HStack(alignment: .firstTextBaseline) {
             Label(title, systemImage: systemImage)
                 .appFont(.headline)

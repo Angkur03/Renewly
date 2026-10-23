@@ -77,15 +77,15 @@ final class ItemDetailViewModel {
         defer { isDeleting = false }
 
         guard await ItemDeletionService(dependencies: dependencies).delete(item, in: context) else {
-            errorMessage = "The item could not be deleted. Please try again."
+            errorMessage = String(localized: "The item could not be deleted. Please try again.")
             return false
         }
         return true
     }
 
     static func reminderSummary(for item: TrackedItem, reminders: ReminderPreferences) -> String {
-        guard reminders.isEnabled else { return "Off in Settings" }
-        return item.isNotificationEnabled ? reminders.scheduleDescription : "Off"
+        guard reminders.isEnabled else { return String(localized: "Off in Settings") }
+        return item.isNotificationEnabled ? reminders.scheduleDescription : String(localized: "Off")
     }
 
     static func makeDocument(
@@ -100,27 +100,27 @@ final class ItemDetailViewModel {
 
         switch item.category {
         case .subscription:
-            lines.append(.init(label: "Price", value: "\(item.cost.formatted(currency)) \(item.billingCycle.title.lowercased())"))
-            lines.append(.init(label: "Monthly equivalent", value: item.billingCycle.monthlyEquivalent(of: item.cost).formatted(currency)))
+            lines.append(.init(label: String(localized: "Price"), value: "\(item.cost.formatted(currency)) · \(item.billingCycle.title)"))
+            lines.append(.init(label: String(localized: "Monthly equivalent"), value: item.billingCycle.monthlyEquivalent(of: item.cost).formatted(currency)))
         case .warranty:
-            lines.append(.init(label: "Purchase price", value: item.cost.formatted(currency)))
+            lines.append(.init(label: String(localized: "Purchase price"), value: item.cost.formatted(currency)))
             if let retailer = item.retailer {
-                lines.append(.init(label: "Retailer", value: retailer))
+                lines.append(.init(label: String(localized: "Retailer"), value: retailer))
             }
             if let serial = item.serialNumber {
-                lines.append(.init(label: "Serial number", value: serial))
+                lines.append(.init(label: String(localized: "Serial number"), value: serial))
             }
         }
         lines.append(.init(label: item.category.startLabel, value: item.startDate.formatted(longDate)))
         let isTrial = item.isInTrial()
-        let expirationLabel = isTrial ? "Trial ends (first charge)" : item.category.expirationLabel
+        let expirationLabel = isTrial ? String(localized: "Trial ends (first charge)") : item.category.expirationLabel
         lines.append(.init(label: expirationLabel, value: item.expirationDate.formatted(longDate)))
 
         let days = item.snapshot.daysUntilExpiration(from: now)
-        lines.append(.init(label: "Status", value: ExpiryText.relative(days: days, category: item.category, isTrial: isTrial)))
-        lines.append(.init(label: "Reminders", value: reminderSummary(for: item, reminders: reminders)))
+        lines.append(.init(label: String(localized: "Status"), value: ExpiryText.relative(days: days, category: item.category, isTrial: isTrial)))
+        lines.append(.init(label: String(localized: "Reminders"), value: reminderSummary(for: item, reminders: reminders)))
         if let url = item.validCancellationURL {
-            lines.append(.init(label: "Manage / cancel", value: url.absoluteString))
+            lines.append(.init(label: String(localized: "Manage / cancel"), value: url.absoluteString))
         }
 
         return ReceiptDocument(
@@ -128,7 +128,7 @@ final class ItemDetailViewModel {
             categoryTitle: item.category.title,
             headline: item.cost.formatted(currency),
             lines: lines,
-            attachmentTitle: item.category == .warranty ? "Warranty card / receipt" : "Receipt",
+            attachmentTitle: item.category == .warranty ? String(localized: "Warranty card / receipt") : String(localized: "Receipt"),
             imageData: imageData,
             generatedAt: now
         )

@@ -9,12 +9,19 @@
 import SwiftUI
 
 struct BadgeView: View {
-    let text: String
+    let text: Text
     let systemImage: String?
     let tint: Color
 
+    init(_ key: LocalizedStringKey, systemImage: String? = nil, tint: Color = .accentColor) {
+        self.text = Text(key)
+        self.systemImage = systemImage
+        self.tint = tint
+    }
+
+    @_disfavoredOverload
     init(_ text: String, systemImage: String? = nil, tint: Color = .accentColor) {
-        self.text = text
+        self.text = Text(text)
         self.systemImage = systemImage
         self.tint = tint
     }
@@ -25,7 +32,7 @@ struct BadgeView: View {
                 Image(systemName: systemImage)
                     .imageScale(.small)
             }
-            Text(text)
+            text
         }
         .appFont(.caption)
         .fontWeight(.semibold)

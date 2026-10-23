@@ -156,18 +156,18 @@ final class ItemEditorViewModel {
         guard category == .subscription, isExpirationInPast else { return nil }
         let date = effectiveExpirationDate.formatted(date: .abbreviated, time: .omitted)
         if isFreeTrial {
-            return "That trial has already ended, so it will be saved as a paid subscription renewing \(date)."
+            return String(localized: "That trial has already ended, so it will be saved as a paid subscription renewing \(date).")
         }
-        return "That date has passed, so it will be saved as the next renewal: \(date)."
+        return String(localized: "That date has passed, so it will be saved as the next renewal: \(date).")
     }
 
     var trialHint: String? {
         guard category == .subscription, isFreeTrial, !isExpirationInPast else { return nil }
-        return "You'll get a reminder the day before the trial ends, so you can cancel before you're charged."
+        return String(localized: "You'll get a reminder the day before the trial ends, so you can cancel before you're charged.")
     }
 
     var expirationLabel: String {
-        category == .subscription && isFreeTrial ? "Trial ends" : category.expirationLabel
+        category == .subscription && isFreeTrial ? String(localized: "Trial ends") : category.expirationLabel
     }
 
     /// Stored as the first charge date; a trial date that already passed is saved as a regular subscription.
@@ -186,7 +186,7 @@ final class ItemEditorViewModel {
         expirationDate = suggestedExpirationDate
     }
 
-    var navigationTitle: String { isEditing ? "Edit Item" : "New Item" }
+    var navigationTitle: String { isEditing ? String(localized: "Edit Item") : String(localized: "New Item") }
 
     var trimmedTitle: String { Self.sanitized(title, maxLength: Self.maxTitleLength) ?? "" }
 
@@ -197,13 +197,18 @@ final class ItemEditorViewModel {
     }
 
     var validationMessage: String? {
-        if trimmedTitle.isEmpty { return "Enter a name." }
-        if !cost.isFinite || cost < 0 { return "Enter a valid price." }
+        if trimmedTitle.isEmpty { return String(localized: "Enter a name.") }
+        if !cost.isFinite || cost < 0 { return String(localized: "Enter a valid price.") }
         if cost > Self.maxCost {
-            return "Price must be \(Self.maxCost.formatted(.number.precision(.fractionLength(0)))) or less."
+            let limit = Self.maxCost.formatted(.number.precision(.fractionLength(0)))
+            return String(localized: "Price must be \(limit) or less.")
         }
-        if expirationDate < startDate { return "\(category.expirationLabel) must be after \(category.startLabel.lowercased())." }
-        if category == .subscription && !isCancellationURLValid { return "Cancellation link must start with https://." }
+        if expirationDate < startDate {
+            return category == .subscription
+                ? String(localized: "The renewal date must be after the start date.")
+                : String(localized: "The warranty end date must be after the purchase date.")
+        }
+        if category == .subscription && !isCancellationURLValid { return String(localized: "Cancellation link must start with https://.") }
         return nil
     }
 
@@ -270,11 +275,11 @@ final class ItemEditorViewModel {
         let scan = ReceiptParser.parse(lines: lines, defaultCurrency: currencyCode, now: now, calendar: calendar)
         let filled = applyScan(scan)
         if !filled.isEmpty {
-            scanMessage = "Filled in \(filled.formatted(.list(type: .and))) from the photo. Check them before saving."
+            scanMessage = String(localized: "Filled in \(filled.formatted(.list(type: .and))) from the photo. Check them before saving.")
         } else if scan.isEmpty {
-            scanMessage = "No details could be read from this photo. You can fill them in yourself."
+            scanMessage = String(localized: "No details could be read from this photo. You can fill them in yourself.")
         } else {
-            scanMessage = "Your details were kept. Nothing new was found on the photo."
+            scanMessage = String(localized: "Your details were kept. Nothing new was found on the photo.")
         }
     }
 
@@ -287,54 +292,56 @@ final class ItemEditorViewModel {
 
         if isBlankNewItem, let suggested = scan.suggestedCategory, suggested != category {
             category = suggested
-            filled.append("type")
+            filled.append(String(localized: "type", comment: "Field name inside a sentence"))
         }
 
         if let merchant = scan.merchant.flatMap({ Self.sanitized($0, maxLength: Self.maxTitleLength) }) {
             if trimmedTitle.isEmpty {
                 title = merchant
-                filled.append("name")
+                filled.append(String(localized: "name", comment: "Field name inside a sentence"))
             }
             if category == .warranty, Self.sanitized(retailer, maxLength: Self.maxFieldLength) == nil {
                 retailer = String(merchant.prefix(Self.maxFieldLength))
-                filled.append("retailer")
+                filled.append(String(localized: "retailer", comment: "Field name inside a sentence"))
             }
         }
 
         if cost == 0, let total = scan.total, total > 0, total <= Self.maxCost {
             cost = total
-            filled.append("price")
+            filled.append(String(localized: "price", comment: "Field name inside a sentence"))
             if let code = scan.currencyCode, code != currencyCode, CurrencyCatalog.shared.contains(code) {
                 currencyCode = code
-                filled.append("currency")
+                filled.append(String(localized: "currency", comment: "Field name inside a sentence"))
             }
         }
 
         if !isEditing, category == .subscription, let cycle = scan.billingCycle, cycle != billingCycle {
             billingCycle = cycle
-            filled.append("billing cycle")
+            filled.append(String(localized: "billing cycle", comment: "Field name inside a sentence"))
         }
 
         if !isEditing, category == .subscription, scan.isFreeTrial, !isFreeTrial {
             isFreeTrial = true
-            filled.append("free trial")
+            filled.append(String(localized: "free trial", comment: "Field name inside a sentence"))
         }
 
         if !isEditing, let purchaseDate = scan.purchaseDate,
            !calendar.isDate(purchaseDate, inSameDayAs: startDate) {
             startDate = purchaseDate
-            filled.append(category.startLabel.lowercased())
+            filled.append(category.startFieldName)
         }
 
         if category == .warranty, Self.sanitized(serialNumber, maxLength: Self.maxFieldLength) == nil,
            let serial = scan.serialNumber {
             serialNumber = String(serial.prefix(Self.maxFieldLength))
-            filled.append("serial number")
+            filled.append(String(localized: "serial number", comment: "Field name inside a sentence"))
         }
 
         if !hasEditedExpiration, let expiration = scannedExpiration(from: scan), expiration >= startDate {
             setExpirationDate(expiration)
-            filled.append(expirationLabel.lowercased())
+            filled.append(category == .subscription && isFreeTrial
+                ? String(localized: "trial end date", comment: "Field name inside a sentence")
+                : category.expirationFieldName)
         }
 
         return filled
@@ -401,7 +408,7 @@ final class ItemEditorViewModel {
             if newReceiptPath != previousReceiptPath, let newReceiptPath {
                 await deleteReceiptQuietly(at: newReceiptPath)
             }
-            errorMessage = "The item could not be saved. Please try again."
+            errorMessage = String(localized: "The item could not be saved. Please try again.")
             return false
         }
         item = target
@@ -506,7 +513,7 @@ final class ItemEditorViewModel {
             } catch {
                 logger.error("Could not persist disabled alerts after scheduling failure.")
             }
-            errorMessage = "Saved, but reminders are off. \(error.userMessage)"
+            errorMessage = String(localized: "Saved, but reminders are off. \(error.userMessage)")
             return false
         }
     }

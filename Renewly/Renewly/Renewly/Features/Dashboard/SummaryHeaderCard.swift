@@ -42,7 +42,7 @@ struct SummaryHeaderCard: View {
                     metric(
                         title: "Monthly burn",
                         value: summary.monthlyBurn,
-                        caption: ExpiryText.count(summary.subscriptionCount, "subscription"),
+                        caption: String(localized: "\(summary.subscriptionCount) subscriptions"),
                         systemImage: "flame.fill",
                         tint: .orange
                     )
@@ -51,7 +51,7 @@ struct SummaryHeaderCard: View {
                     metric(
                         title: "Protected",
                         value: summary.protectedCapital,
-                        caption: ExpiryText.count(summary.activeWarrantyCount, "active warranty", plural: "active warranties"),
+                        caption: String(localized: "\(summary.activeWarrantyCount) active warranties"),
                         systemImage: "checkmark.shield.fill",
                         tint: .green
                     )
@@ -70,9 +70,7 @@ struct SummaryHeaderCard: View {
 
                 if summary.excludedItemCount > 0 {
                     Label(
-                        summary.excludedItemCount == 1
-                            ? "1 item in another currency is not included"
-                            : "\(summary.excludedItemCount) items in other currencies are not included",
+                        "\(summary.excludedItemCount) items in other currencies are not included",
                         systemImage: "info.circle"
                     )
                     .appFont(.caption)
@@ -102,6 +100,7 @@ struct SummaryHeaderCard: View {
                 Text(isWarranty ? "Next warranty expiry" : "Next renewal")
                     .appFont(.caption)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(nextUp.title)
                     .appFont(.subheadline)
                     .fontWeight(.semibold)
@@ -113,6 +112,7 @@ struct SummaryHeaderCard: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(isUrgent ? Color.orange : Color.secondary)
                 .multilineTextAlignment(.trailing)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.vertical, 8)
         .padding(.leading, 8)
@@ -121,7 +121,7 @@ struct SummaryHeaderCard: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func metric(title: String, value: Double, caption: String, systemImage: String, tint: Color) -> some View {
+    private func metric(title: LocalizedStringKey, value: Double, caption: String, systemImage: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Label(title, systemImage: systemImage)
                 .appFont(.subheadline)

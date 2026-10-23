@@ -20,10 +20,10 @@ nonisolated enum DashboardFilter: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .all: "All"
-        case .subscriptions: "Subscriptions"
-        case .warranties: "Warranties"
-        case .expiringSoon: "Expiring Soon"
+        case .all: String(localized: "All")
+        case .subscriptions: String(localized: "Subscriptions")
+        case .warranties: String(localized: "Warranties")
+        case .expiringSoon: String(localized: "Expiring Soon")
         }
     }
 
@@ -157,7 +157,7 @@ final class DashboardViewModel {
 
     func delete(_ item: TrackedItem, in context: ModelContext) async {
         guard await ItemDeletionService(dependencies: dependencies).delete(item, in: context) else {
-            errorMessage = "The item could not be deleted. Please try again."
+            errorMessage = String(localized: "The item could not be deleted. Please try again.")
             return
         }
         registerInteraction()

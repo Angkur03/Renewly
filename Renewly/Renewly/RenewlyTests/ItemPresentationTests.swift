@@ -30,11 +30,14 @@ struct ExpiryTextTests {
         #expect(ExpiryText.badge(days: days) == expected)
     }
 
-    @Test("Pluralisation")
-    func pluralisation() {
-        #expect(ExpiryText.count(1, "subscription") == "1 subscription")
-        #expect(ExpiryText.count(0, "subscription") == "0 subscriptions")
-        #expect(ExpiryText.count(2, "active warranty", plural: "active warranties") == "2 active warranties")
+    @Test("Trial phrases", arguments: [
+        (-3, "Trial ended 3 days ago"),
+        (0, "Trial ends today"),
+        (1, "Trial ends tomorrow"),
+        (4, "Trial ends in 4 days")
+    ])
+    func trial(days: Int, expected: String) {
+        #expect(ExpiryText.trialRelative(days: days) == expected)
     }
 }
 

@@ -1,0 +1,85 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Renewly"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Renewly"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "NSCameraUsageDescription" : {
+      "comment" : "Privacy - Camera Usage Description",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "রসিদ ও ওয়ারেন্টি কার্ডের ছবি তুলতে Renewly ক্যামেরা ব্যবহার করে। ছবিগুলো এই ডিভাইসেই থাকে।"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renewly verwendet die Kamera, um Belege und Garantiekarten zu fotografieren. Die Fotos bleiben auf diesem Gerät."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renewly uses the camera to capture receipts and warranty cards. Photos stay on this device."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renewly usa la cámara para fotografiar recibos y tarjetas de garantía. Las fotos se quedan en este dispositivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renewly utilise l’appareil photo pour capturer les reçus et cartes de garantie. Les photos restent sur cet appareil."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renewlyはレシートや保証書を撮影するためにカメラを使用します。写真はこのデバイスにのみ保存されます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Renewly usa a câmera para fotografar recibos e cartões de garantia. As fotos ficam neste dispositivo."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renewly 使用相机拍摄收据和保修卡。照片仅保存在此设备上。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

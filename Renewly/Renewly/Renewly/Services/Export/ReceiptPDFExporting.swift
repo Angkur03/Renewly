@@ -29,8 +29,8 @@ nonisolated enum PDFExportError: Error, Equatable, Sendable {
 
     var userMessage: String {
         switch self {
-        case .renderFailed: "The PDF could not be created."
-        case .writeFailed: "The PDF could not be saved for sharing."
+        case .renderFailed: String(localized: "The PDF could not be created.")
+        case .writeFailed: String(localized: "The PDF could not be saved for sharing.")
         }
     }
 }

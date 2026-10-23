@@ -16,8 +16,8 @@ nonisolated enum ItemCategory: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .subscription: "Subscription"
-        case .warranty: "Warranty"
+        case .subscription: String(localized: "Subscription")
+        case .warranty: String(localized: "Warranty")
         }
     }
 
@@ -30,15 +30,30 @@ nonisolated enum ItemCategory: String, CaseIterable, Identifiable, Sendable {
 
     var expirationLabel: String {
         switch self {
-        case .subscription: "Next renewal"
-        case .warranty: "Warranty expires"
+        case .subscription: String(localized: "Next renewal")
+        case .warranty: String(localized: "Warranty expires")
+        }
+    }
+
+    /// Lowercase field name for use inside a sentence, e.g. "Filled in price and purchase date".
+    var startFieldName: String {
+        switch self {
+        case .subscription: String(localized: "start date", comment: "Field name inside a sentence")
+        case .warranty: String(localized: "purchase date", comment: "Field name inside a sentence")
+        }
+    }
+
+    var expirationFieldName: String {
+        switch self {
+        case .subscription: String(localized: "renewal date", comment: "Field name inside a sentence")
+        case .warranty: String(localized: "expiry date", comment: "Field name inside a sentence")
         }
     }
 
     var startLabel: String {
         switch self {
-        case .subscription: "Started"
-        case .warranty: "Purchased"
+        case .subscription: String(localized: "Started")
+        case .warranty: String(localized: "Purchased")
         }
     }
 }

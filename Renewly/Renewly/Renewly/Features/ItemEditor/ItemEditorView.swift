@@ -170,16 +170,17 @@ struct ItemEditorView: View {
         let isPro = dependencies.entitlements.isPro
         let preferences = ReminderPreferences(isEnabled: remindersEnabled, offsetsRaw: reminderOffsetsRaw).limited(isPro: isPro)
         guard viewModel.canEnableReminders else {
-            return "This warranty has already expired, so there is nothing left to remind you about."
+            return String(localized: "This warranty has already expired, so there is nothing left to remind you about.")
         }
         guard preferences.isEnabled else {
-            return "Reminders are turned off for all items in Settings."
+            return String(localized: "Reminders are turned off for all items in Settings.")
         }
-        let base = "Alerts at 9:00 AM, \(preferences.scheduleDescription) the date."
+        let base = String(localized: "Alerts at 9:00 AM, \(preferences.scheduleDescription) the date.")
         if isPro {
             return base
         }
-        return "\(base) The free plan covers up to \(NotificationManager.freeAlertLimit) items. Pro adds unlimited items and 30, 3 and 1 day alerts."
+        let limit = String(localized: "The free plan covers up to \(NotificationManager.freeAlertLimit) items. Pro adds unlimited items and 30, 3 and 1 day alerts.")
+        return "\(base) \(limit)"
     }
 
     private func subscriptionSection(viewModel: ItemEditorViewModel) -> some View {

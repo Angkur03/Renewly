@@ -17,7 +17,7 @@ struct ReminderPreferencesTests {
         let preferences = ReminderPreferences()
         #expect(preferences.isEnabled)
         #expect(preferences.offsets == [30, 7, 3, 1])
-        #expect(preferences.scheduleDescription == "30, 7, 3 and 1 day before")
+        #expect(preferences.scheduleDescription == "30, 7, 3, and 1 day before")
     }
 
     @Test("Free plan is limited to the 7-day reminder; Pro keeps the chosen schedule")

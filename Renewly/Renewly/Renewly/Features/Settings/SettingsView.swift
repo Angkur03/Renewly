@@ -169,7 +169,7 @@ struct SettingsView: View {
         }
     }
 
-    private func linkRow(_ title: String, systemImage: String, detail: String? = nil, trailingImage: String) -> some View {
+    private func linkRow(_ title: LocalizedStringKey, systemImage: String, detail: String? = nil, trailingImage: String) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Label(title, systemImage: systemImage)
@@ -229,12 +229,12 @@ struct SettingsView: View {
 
     private var notificationsFooter: String {
         guard remindersEnabled else {
-            return "No reminders will be sent. Items keep their reminder setting and resume when you turn this back on."
+            return String(localized: "No reminders will be sent. Items keep their reminder setting and resume when you turn this back on.")
         }
         guard viewModel.isPro else {
-            return "Alerts arrive at 9:00 AM. The free plan reminds you 7 days before every renewal or warranty ends. Renewly Pro adds 30, 3 and 1 day alerts."
+            return String(localized: "Alerts arrive at 9:00 AM. The free plan reminds you 7 days before every renewal or warranty ends. Renewly Pro adds 30, 3 and 1 day alerts.")
         }
-        return "Alerts arrive at 9:00 AM. The 3-day reminder is always included, so you are warned before every renewal or warranty ends."
+        return String(localized: "Alerts arrive at 9:00 AM. The 3-day reminder is always included, so you are warned before every renewal or warranty ends.")
     }
 
     @ViewBuilder

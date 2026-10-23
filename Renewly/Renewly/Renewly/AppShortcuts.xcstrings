@@ -1,0 +1,288 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add a subscription in ${applicationName}" : {
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Abo in ${applicationName} hinzufügen",
+              "${kind} in ${applicationName} hinzufügen",
+              "Neuer Eintrag in ${applicationName}"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Add a subscription in ${applicationName}",
+              "Add a ${kind} in ${applicationName}",
+              "New item in ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Añadir una suscripción en ${applicationName}",
+              "Añadir ${kind} en ${applicationName}",
+              "Nuevo elemento en ${applicationName}"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ajouter un abonnement dans ${applicationName}",
+              "Ajouter ${kind} dans ${applicationName}",
+              "Nouvel élément dans ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}でサブスクを追加",
+              "${applicationName}で${kind}を追加",
+              "${applicationName}で新規項目"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Adicionar uma assinatura no ${applicationName}",
+              "Adicionar ${kind} no ${applicationName}",
+              "Novo item no ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "在${applicationName}中添加订阅",
+              "在${applicationName}中添加${kind}",
+              "在${applicationName}中新建项目"
+            ]
+          }
+        }
+      }
+    },
+    "How much do I spend in ${applicationName}" : {
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Wie viel gebe ich in ${applicationName} aus",
+              "Was sind meine monatlichen Ausgaben in ${applicationName}"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "How much do I spend in ${applicationName}",
+              "What's my monthly spend in ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Cuánto gasto en ${applicationName}",
+              "Cuál es mi gasto mensual en ${applicationName}"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Combien je dépense dans ${applicationName}",
+              "Quelle est ma dépense mensuelle dans ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}でいくら使っている",
+              "${applicationName}で月々の支出"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quanto eu gasto no ${applicationName}",
+              "Qual é meu gasto mensal no ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "我在${applicationName}里花了多少钱",
+              "我在${applicationName}里每月支出多少"
+            ]
+          }
+        }
+      }
+    },
+    "Open ${item} in ${applicationName}" : {
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${item} in ${applicationName} öffnen",
+              "${item} in ${applicationName} zeigen"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Open ${item} in ${applicationName}",
+              "Show ${item} in ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Abrir ${item} en ${applicationName}",
+              "Mostrar ${item} en ${applicationName}"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ouvrir ${item} dans ${applicationName}",
+              "Afficher ${item} dans ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で${item}を開く",
+              "${applicationName}で${item}を表示"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Abrir ${item} no ${applicationName}",
+              "Mostrar ${item} no ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "在${applicationName}中打开${item}",
+              "在${applicationName}中显示${item}"
+            ]
+          }
+        }
+      }
+    },
+    "What's coming up in ${applicationName}" : {
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Was steht in ${applicationName} an",
+              "Was verlängert sich bald in ${applicationName}",
+              "Was ist fällig in ${applicationName}"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "What's coming up in ${applicationName}",
+              "What renews soon in ${applicationName}",
+              "What's due in ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Qué viene en ${applicationName}",
+              "Qué se renueva pronto en ${applicationName}",
+              "Qué vence en ${applicationName}"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Qu’est-ce qui arrive dans ${applicationName}",
+              "Qu’est-ce qui se renouvelle bientôt dans ${applicationName}",
+              "Quelles échéances dans ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で今後の予定",
+              "${applicationName}でもうすぐ更新されるもの",
+              "${applicationName}で期限が近いもの"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "O que vem por aí no ${applicationName}",
+              "O que renova em breve no ${applicationName}",
+              "O que vence no ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}里有什么即将到来",
+              "${applicationName}里什么快要续订了",
+              "${applicationName}里有什么到期"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

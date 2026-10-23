@@ -69,10 +69,10 @@ struct BackupSection: View {
     }
 
     private var exportDetail: String {
-        items.isEmpty ? "Nothing to back up yet" : ExpiryText.count(items.count, "item")
+        items.isEmpty ? String(localized: "Nothing to back up yet") : String(localized: "\(items.count) items")
     }
 
-    private func row(_ title: String, systemImage: String, detail: String?) -> some View {
+    private func row(_ title: LocalizedStringKey, systemImage: String, detail: String?) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Label(title, systemImage: systemImage)

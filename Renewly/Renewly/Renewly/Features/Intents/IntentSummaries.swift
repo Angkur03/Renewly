@@ -21,29 +21,46 @@ nonisolated enum IntentSummaries {
     }
 
     static func upcomingDialog(_ items: [ItemSnapshot], within days: Int, now: Date, calendar: Calendar = .current) -> String {
-        let window = days == 1 ? "today or tomorrow" : "in the next \(days) days"
         let due = upcoming(items, within: days, now: now, calendar: calendar)
         guard !due.isEmpty else {
-            return "Nothing renews or expires \(window)."
+            return days == 1
+                ? String(localized: "Nothing renews or expires today or tomorrow.")
+                : String(localized: "Nothing renews or expires in the next \(days) days.")
         }
         var phrases = due.prefix(spokenItemLimit).map { phrase(for: $0, now: now, calendar: calendar) }
         if due.count > spokenItemLimit {
-            phrases.append("\(due.count - spokenItemLimit) more")
+            phrases.append(String(localized: "\(due.count - spokenItemLimit) more"))
         }
-        let count = due.count == 1 ? "One thing" : "\(due.count) things"
-        return "\(count) \(window): \(phrases.formatted(.list(type: .and)))."
+        let list = phrases.formatted(.list(type: .and))
+        let count = String(localized: "\(due.count) things")
+        return days == 1
+            ? String(localized: "\(count) today or tomorrow: \(list).")
+            : String(localized: "\(count) in the next \(days) days: \(list).")
     }
 
     /// e.g. "Netflix renews tomorrow", "YouTube Premium's trial ends in 3 days", "AirPods Pro warranty expires today".
     static func phrase(for item: ItemSnapshot, now: Date, calendar: Calendar = .current) -> String {
         let days = max(0, item.daysUntilExpiration(from: now, calendar: calendar))
-        let kind = WidgetSnapshotBuilder.kind(of: item, calendar: calendar)
-        let timing = WidgetText.relative(days: days, kind: kind)
-        let lowered = timing.prefix(1).lowercased() + timing.dropFirst()
-        switch kind {
-        case .subscription: return "\(item.title) \(lowered)"
-        case .trial: return "\(item.title)'s \(lowered)"
-        case .warranty: return "\(item.title) warranty \(lowered)"
+        let title = item.title
+        switch WidgetSnapshotBuilder.kind(of: item, calendar: calendar) {
+        case .subscription:
+            return switch days {
+            case 0: String(localized: "\(title) renews today")
+            case 1: String(localized: "\(title) renews tomorrow")
+            default: String(localized: "\(title) renews in \(days) days")
+            }
+        case .trial:
+            return switch days {
+            case 0: String(localized: "\(title)'s trial ends today")
+            case 1: String(localized: "\(title)'s trial ends tomorrow")
+            default: String(localized: "\(title)'s trial ends in \(days) days")
+            }
+        case .warranty:
+            return switch days {
+            case 0: String(localized: "\(title) warranty expires today")
+            case 1: String(localized: "\(title) warranty expires tomorrow")
+            default: String(localized: "\(title) warranty expires in \(days) days")
+            }
         }
     }
 
@@ -51,16 +68,14 @@ nonisolated enum IntentSummaries {
         let summary = DashboardSummary.make(from: items, currencyCode: currencyCode, now: now, calendar: calendar)
         guard summary.subscriptionCount > 0 else {
             if summary.excludedItemCount > 0 {
-                return "You have no subscriptions in \(currencyCode). Items in other currencies aren't added up."
+                return String(localized: "You have no subscriptions in \(currencyCode). Items in other currencies aren't added up.")
             }
-            return "You aren't tracking any subscriptions yet."
+            return String(localized: "You aren't tracking any subscriptions yet.")
         }
         let amount = summary.monthlyBurn.formatted(.currency(code: currencyCode))
-        let count = summary.subscriptionCount == 1 ? "1 subscription" : "\(summary.subscriptionCount) subscriptions"
-        var sentence = "You spend about \(amount) a month on \(count)."
-        if summary.excludedItemCount > 0 {
-            sentence += " Items in other currencies aren't included."
-        }
-        return sentence
+        let count = String(localized: "\(summary.subscriptionCount) subscriptions")
+        let sentence = String(localized: "You spend about \(amount) a month on \(count).")
+        guard summary.excludedItemCount > 0 else { return sentence }
+        return "\(sentence) \(String(localized: "Items in other currencies aren't included."))"
     }
 }

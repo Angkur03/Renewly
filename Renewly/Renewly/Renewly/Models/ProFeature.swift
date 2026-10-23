@@ -19,23 +19,23 @@ nonisolated enum ProFeature: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .unlimitedReminders: "Unlimited reminders"
-        case .extraReminders: "Extra reminder times"
-        case .insights: "Spending insights"
-        case .pdfExport: "PDF export"
+        case .unlimitedReminders: String(localized: "Unlimited reminders")
+        case .extraReminders: String(localized: "Extra reminder times")
+        case .insights: String(localized: "Spending insights")
+        case .pdfExport: String(localized: "PDF export")
         }
     }
 
     var detail: String {
         switch self {
         case .unlimitedReminders:
-            "Alerts for every subscription and warranty, not just \(NotificationManager.freeAlertLimit)."
+            String(localized: "Alerts for every subscription and warranty, not just \(NotificationManager.freeAlertLimit).")
         case .extraReminders:
-            "Add 30, 3 and 1 day alerts on top of the 7-day reminder."
+            String(localized: "Add 30, 3 and 1 day alerts on top of the 7-day reminder.")
         case .insights:
-            "Monthly and yearly costs, a 12-month forecast and where your money goes."
+            String(localized: "Monthly and yearly costs, a 12-month forecast and where your money goes.")
         case .pdfExport:
-            "Save any item with its receipt or warranty card as a PDF to print or share."
+            String(localized: "Save any item with its receipt or warranty card as a PDF to print or share.")
         }
     }
 

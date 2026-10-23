@@ -65,7 +65,7 @@ final class SettingsViewModel {
     func restorePurchases() async {
         do {
             try await entitlements.restorePurchases()
-            statusMessage = isPro ? "Renewly Pro has been restored." : "No active Pro subscription was found for this Apple Account."
+            statusMessage = isPro ? String(localized: "Renewly Pro has been restored.") : String(localized: "No active Pro subscription was found for this Apple Account.")
         } catch {
             errorMessage = error.userMessage
         }

@@ -9,13 +9,13 @@
 import SwiftUI
 
 struct CurrencyPickerView: View {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var selection: String
 
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: CurrencyPickerViewModel
 
-    init(title: String, selection: Binding<String>) {
+    init(title: LocalizedStringKey, selection: Binding<String>) {
         self.title = title
         _selection = selection
         _viewModel = State(initialValue: CurrencyPickerViewModel(selectedCode: selection.wrappedValue))
@@ -39,7 +39,7 @@ struct CurrencyPickerView: View {
                         Text(viewModel.resultsTitle)
                     } footer: {
                         if viewModel.isSearching {
-                            Text("\(results.count) match\(results.count == 1 ? "" : "es")")
+                            Text("\(results.count) matches")
                         }
                     }
                 }
@@ -123,13 +123,13 @@ struct CurrencyRow: View {
         guard option.countries.count > 1 else { return nil }
         let shown = option.countries.prefix(3).joined(separator: ", ")
         let remaining = option.countries.count - 3
-        return remaining > 0 ? "\(shown) +\(remaining) more" : shown
+        return remaining > 0 ? String(localized: "\(shown) +\(remaining) more") : shown
     }
 }
 
 /// Form row that shows the current currency and opens the searchable picker.
 struct CurrencyField: View {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var selection: String
 
     @State private var isPickerPresented = false
@@ -162,7 +162,7 @@ struct CurrencyField: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(title), \(option.name)")
+        .accessibilityLabel(Text(title) + Text(verbatim: ", \(option.name)"))
         .accessibilityHint("Opens a searchable list of currencies")
         .sheet(isPresented: $isPickerPresented) {
             CurrencyPickerView(title: title, selection: $selection)

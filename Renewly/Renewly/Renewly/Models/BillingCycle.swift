@@ -17,17 +17,17 @@ nonisolated enum BillingCycle: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .monthly: "Monthly"
-        case .quarterly: "Quarterly"
-        case .yearly: "Yearly"
+        case .monthly: String(localized: "Monthly")
+        case .quarterly: String(localized: "Quarterly")
+        case .yearly: String(localized: "Yearly")
         }
     }
 
     var shortSuffix: String {
         switch self {
-        case .monthly: "/mo"
-        case .quarterly: "/qtr"
-        case .yearly: "/yr"
+        case .monthly: String(localized: "/mo")
+        case .quarterly: String(localized: "/qtr")
+        case .yearly: String(localized: "/yr")
         }
     }
 

@@ -155,12 +155,12 @@ struct ItemDetailView: View {
             VStack(alignment: .leading, spacing: 12) {
                 row(item.category.startLabel, value: item.startDate.formatted(date: .long, time: .omitted))
                 row(item.category.expirationLabel, value: item.expirationDate.formatted(date: .long, time: .omitted))
-                row("Reminders", value: ItemDetailViewModel.reminderSummary(for: item, reminders: reminders))
+                row(String(localized: "Reminders"), value: ItemDetailViewModel.reminderSummary(for: item, reminders: reminders))
                 if let retailer = item.retailer, !retailer.isEmpty {
-                    row("Retailer", value: retailer)
+                    row(String(localized: "Retailer"), value: retailer)
                 }
                 if let serial = item.serialNumber, !serial.isEmpty {
-                    row("Serial number", value: serial)
+                    row(String(localized: "Serial number"), value: serial)
                         .textSelection(.enabled)
                 }
                 if let url = item.validCancellationURL {
@@ -217,9 +217,7 @@ struct ItemDetailView: View {
                             BadgeView("Pro", systemImage: "crown.fill", tint: .yellow)
                         }
                     }
-                    Text(item.receiptImagePath == nil
-                         ? "Details only. Attach a receipt to include it."
-                         : "Details plus the attached \(item.category == .warranty ? "card" : "receipt"), ready to print or share.")
+                    Text(exportDetail)
                         .appFont(.caption)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.leading)
@@ -241,6 +239,13 @@ struct ItemDetailView: View {
         }
         .buttonStyle(.plain)
         .disabled(viewModel.isExporting || (viewModel.isPro && item.receiptImagePath != nil && viewModel.receiptImage == nil && !viewModel.receiptLoadFailed))
+    }
+
+    private var exportDetail: LocalizedStringKey {
+        guard item.receiptImagePath != nil else { return "Details only. Attach a receipt to include it." }
+        return item.category == .warranty
+            ? "Details plus the attached card, ready to print or share."
+            : "Details plus the attached receipt, ready to print or share."
     }
 
     private func row(_ title: String, value: String) -> some View {

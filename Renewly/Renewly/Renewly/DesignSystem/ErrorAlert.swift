@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension View {
-    func errorAlert(message: Binding<String?>, title: String = "Something went wrong") -> some View {
+    func errorAlert(message: Binding<String?>, title: LocalizedStringKey = "Something went wrong") -> some View {
         alert(
             title,
             isPresented: Binding(

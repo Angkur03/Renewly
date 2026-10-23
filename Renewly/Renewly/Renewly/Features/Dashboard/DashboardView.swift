@@ -118,7 +118,7 @@ struct DashboardView: View {
             now = .now
         }
         .confirmationDialog(
-            pendingDeletion.map { "Delete \($0.title)?" } ?? "Delete item?",
+            pendingDeletion.map { String(localized: "Delete \($0.title)?") } ?? String(localized: "Delete item?"),
             isPresented: Binding(
                 get: { pendingDeletion != nil },
                 set: { if !$0 { pendingDeletion = nil } }
@@ -242,7 +242,7 @@ struct DashboardView: View {
         }
     }
 
-    private func sectionHeader(_ title: String, count: Int, systemImage: String) -> some View {
+    private func sectionHeader(_ title: LocalizedStringKey, count: Int, systemImage: String) -> some View {
         HStack(spacing: 6) {
             Label(title, systemImage: systemImage)
                 .appFont(.subheadline)

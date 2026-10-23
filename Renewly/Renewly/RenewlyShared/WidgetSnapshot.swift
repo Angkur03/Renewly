@@ -48,21 +48,31 @@ nonisolated enum WidgetText {
 
     /// e.g. "Renews tomorrow", "Trial ends in 3 days", "Expires today".
     static func relative(days: Int, kind: WidgetSnapshot.Kind) -> String {
-        let verb = switch kind {
-        case .subscription: "Renews"
-        case .warranty: "Expires"
-        case .trial: "Trial ends"
-        }
-        return switch days {
-        case ...0: "\(verb) today"
-        case 1: "\(verb) tomorrow"
-        default: "\(verb) in \(days) days"
+        switch kind {
+        case .subscription:
+            switch days {
+            case ...0: String(localized: "Renews today")
+            case 1: String(localized: "Renews tomorrow")
+            default: String(localized: "Renews in \(days) days")
+            }
+        case .warranty:
+            switch days {
+            case ...0: String(localized: "Expires today")
+            case 1: String(localized: "Expires tomorrow")
+            default: String(localized: "Expires in \(days) days")
+            }
+        case .trial:
+            switch days {
+            case ...0: String(localized: "Trial ends today")
+            case 1: String(localized: "Trial ends tomorrow")
+            default: String(localized: "Trial ends in \(days) days")
+            }
         }
     }
 
     /// e.g. "Today", "1d", "12d".
     static func compact(days: Int) -> String {
-        days <= 0 ? "Today" : "\(days)d"
+        days <= 0 ? String(localized: "Today") : String(localized: "\(days)d", comment: "Very short: days remaining")
     }
 }
 

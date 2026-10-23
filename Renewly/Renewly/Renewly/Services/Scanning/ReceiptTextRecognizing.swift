@@ -17,9 +17,9 @@ nonisolated enum ReceiptScanError: Error, Equatable, Sendable {
 
     var userMessage: String {
         switch self {
-        case .unreadableImage: "That photo could not be read. Try a clearer picture."
-        case .recognitionFailed: "Text on the receipt could not be recognised. You can still fill in the details yourself."
-        case .cancelled: "Scanning was cancelled."
+        case .unreadableImage: String(localized: "That photo could not be read. Try a clearer picture.")
+        case .recognitionFailed: String(localized: "Text on the receipt could not be recognised. You can still fill in the details yourself.")
+        case .cancelled: String(localized: "Scanning was cancelled.")
         }
     }
 }

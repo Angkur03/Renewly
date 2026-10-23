@@ -47,11 +47,11 @@ nonisolated enum BackupError: Error, Equatable, Sendable {
 
     var userMessage: String {
         switch self {
-        case .encodingFailed: "The backup could not be created. Please try again."
-        case .unreadableFile: "That file is not a Renewly backup, or it is damaged."
-        case .fileTooLarge: "That file is too large to be a Renewly backup."
-        case .newerFormat: "This backup was made by a newer version of Renewly. Update the app, then try again."
-        case .saveFailed: "The backup could not be restored. Nothing was changed."
+        case .encodingFailed: String(localized: "The backup could not be created. Please try again.")
+        case .unreadableFile: String(localized: "That file is not a Renewly backup, or it is damaged.")
+        case .fileTooLarge: String(localized: "That file is too large to be a Renewly backup.")
+        case .newerFormat: String(localized: "This backup was made by a newer version of Renewly. Update the app, then try again.")
+        case .saveFailed: String(localized: "The backup could not be restored. Nothing was changed.")
         }
     }
 }
@@ -63,21 +63,15 @@ nonisolated struct RestoreSummary: Equatable, Sendable {
     var missingReceipts = 0
 
     var message: String {
-        var parts = [added == 1 ? "Restored 1 item." : "Restored \(added) items."]
+        var parts = [String(localized: "Restored \(added) items.")]
         if alreadyPresent > 0 {
-            parts.append(alreadyPresent == 1
-                ? "1 was already on this device."
-                : "\(alreadyPresent) were already on this device.")
+            parts.append(String(localized: "\(alreadyPresent) were already on this device."))
         }
         if skippedInvalid > 0 {
-            parts.append(skippedInvalid == 1
-                ? "1 damaged entry was skipped."
-                : "\(skippedInvalid) damaged entries were skipped.")
+            parts.append(String(localized: "\(skippedInvalid) damaged entries were skipped."))
         }
         if missingReceipts > 0 {
-            parts.append(missingReceipts == 1
-                ? "1 receipt photo could not be restored."
-                : "\(missingReceipts) receipt photos could not be restored.")
+            parts.append(String(localized: "\(missingReceipts) receipt photos could not be restored."))
         }
         return parts.joined(separator: " ")
     }
@@ -141,6 +135,6 @@ nonisolated enum BackupCoder {
     }
 
     static func defaultFilename(for date: Date) -> String {
-        "Renewly Backup \(date.formatted(.iso8601.year().month().day()))"
+        String(localized: "Renewly Backup \(date.formatted(.iso8601.year().month().day()))")
     }
 }

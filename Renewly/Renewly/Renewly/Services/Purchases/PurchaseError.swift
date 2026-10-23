@@ -17,11 +17,11 @@ nonisolated enum PurchaseError: Error, Equatable, Sendable {
 
     var userMessage: String {
         switch self {
-        case .productUnavailable: "Renewly Pro is not available right now. Please try again later."
-        case .verificationFailed: "The purchase could not be verified."
-        case .pending: "Your purchase is pending approval. Pro unlocks as soon as it completes."
-        case .purchaseFailed: "The purchase could not be completed."
-        case .restoreFailed: "Purchases could not be restored. Check your connection and try again."
+        case .productUnavailable: String(localized: "Renewly Pro is not available right now. Please try again later.")
+        case .verificationFailed: String(localized: "The purchase could not be verified.")
+        case .pending: String(localized: "Your purchase is pending approval. Pro unlocks as soon as it completes.")
+        case .purchaseFailed: String(localized: "The purchase could not be completed.")
+        case .restoreFailed: String(localized: "Purchases could not be restored. Check your connection and try again.")
         }
     }
 }

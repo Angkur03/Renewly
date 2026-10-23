@@ -54,11 +54,11 @@ final class BackupViewModel {
         exportFile = nil
         switch result {
         case .success:
-            statusMessage = "Backup saved. Keep it somewhere safe, like iCloud Drive, to restore on a new iPhone."
+            statusMessage = String(localized: "Backup saved. Keep it somewhere safe, like iCloud Drive, to restore on a new iPhone.")
         case .failure(let error as CocoaError) where error.code == .userCancelled:
             break
         case .failure:
-            errorMessage = "The backup could not be saved there. Try another location."
+            errorMessage = String(localized: "The backup could not be saved there. Try another location.")
         }
     }
 

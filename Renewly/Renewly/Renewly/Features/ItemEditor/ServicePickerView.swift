@@ -92,7 +92,7 @@ struct ServiceRow: View {
     }
 
     private var subtitle: String {
-        service.manageURL == nil ? service.billingCycle.title : "\(service.billingCycle.title) · cancel link included"
+        service.manageURL == nil ? service.billingCycle.title : String(localized: "\(service.billingCycle.title) · cancel link included")
     }
 }
 
