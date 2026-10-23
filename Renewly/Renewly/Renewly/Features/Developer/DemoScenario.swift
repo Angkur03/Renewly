@@ -59,19 +59,22 @@ enum DemoDataFactory {
         func day(_ offset: Int) -> Date {
             calendar.date(byAdding: .day, value: offset, to: now) ?? now
         }
+        func price(_ usd: Double, _ code: String) -> Double {
+            scenario == .mixedCurrencies ? usd : localPrice(usd, currency: code)
+        }
         func subscription(
             _ title: String, _ cost: Double, _ cycle: BillingCycle, start: Int, renews: Int,
             currency code: String = currency, url: String? = nil, isTrial: Bool = false
         ) -> TrackedItem {
             TrackedItem(
-                title: title, category: .subscription, cost: cost, currencyCode: code,
+                title: title, category: .subscription, cost: price(cost, code), currencyCode: code,
                 startDate: day(start), expirationDate: day(renews), billingCycle: cycle, cancellationURL: url,
                 trialEndDate: isTrial ? day(renews) : nil
             )
         }
         func warranty(_ title: String, _ cost: Double, retailer: String, serial: String, start: Int, expires: Int, currency code: String = currency) -> TrackedItem {
             TrackedItem(
-                title: title, category: .warranty, cost: cost, currencyCode: code,
+                title: title, category: .warranty, cost: price(cost, code), currencyCode: code,
                 startDate: day(start), expirationDate: day(expires), serialNumber: serial, retailer: retailer
             )
         }
@@ -123,19 +126,57 @@ enum DemoDataFactory {
         }
     }
 
+    /// Rough local price levels, so demo items in other currencies look believable ("¥1,950", not "¥23").
+    private static let demoPriceRates: [String: Double] = [
+        "JPY": 85, "CNY": 3, "BRL": 2.6, "MXN": 12, "INR": 30, "BDT": 50,
+    ]
+    private static let wholeNumberCurrencies: Set<String> = ["JPY"]
+
+    /// Converts a USD demo price into the given currency, rounded the way local prices usually are.
+    static func localPrice(_ usd: Double, currency: String) -> Double {
+        guard let rate = demoPriceRates[currency] else { return usd }
+        let value = usd * rate
+        guard !wholeNumberCurrencies.contains(currency), value < 100 else { return (value / 10).rounded() * 10 }
+        return value.rounded(.down) + 0.99
+    }
+
+    /// `-demo_reminders YES` turns reminders on for the items a free user could cover, and swaps in
+    /// `DemoNotificationCenter` so no permission alert appears.
+    nonisolated static let demoRemindersKey = "demo_reminders"
+
     /// Launch with `-seed_demo starter,expiringSoon` to fill an empty store, e.g. for UI checks and screenshots.
     static func seedFromLaunchArguments(into context: ModelContext, currency: String) {
-        guard let raw = UserDefaults.standard.string(forKey: "seed_demo") else { return }
+        let defaults = UserDefaults.standard
+        guard let raw = defaults.string(forKey: "seed_demo") else { return }
         let scenarios = raw.split(separator: ",").compactMap { DemoScenario(rawValue: String($0)) }
         guard !scenarios.isEmpty else { return }
 
         do {
             guard try context.fetchCount(FetchDescriptor<TrackedItem>()) == 0 else { return }
-            scenarios.flatMap { items(for: $0, currency: currency) }.forEach(context.insert)
+            let seeded = scenarios.flatMap { items(for: $0, currency: currency) }
+            if defaults.bool(forKey: demoRemindersKey) {
+                enableFreeReminders(on: seeded)
+            }
+            seeded.forEach(context.insert)
             try context.save()
         } catch {
             context.rollback()
         }
+    }
+
+    /// Turns reminders on for upcoming items up to the free plan's limit: the soonest item of each
+    /// category first, so subscriptions and warranties both show active reminders, then the soonest of the rest.
+    static func enableFreeReminders(on items: [TrackedItem], now: Date = .now) {
+        let upcoming = items
+            .filter { $0.expirationDate >= now }
+            .sorted { $0.expirationDate < $1.expirationDate }
+        let firstOfEachCategory = ItemCategory.allCases.compactMap { category in
+            upcoming.first { $0.category == category }
+        }
+        let leadIDs = Set(firstOfEachCategory.map(\.id))
+        (firstOfEachCategory + upcoming.filter { !leadIDs.contains($0.id) })
+            .prefix(NotificationManager.freeAlertLimit)
+            .forEach { $0.isNotificationEnabled = true }
     }
 }
 #endif

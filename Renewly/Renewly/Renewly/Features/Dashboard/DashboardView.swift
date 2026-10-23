@@ -173,7 +173,7 @@ struct DashboardView: View {
         }
         #if DEBUG
         .task {
-            if UserDefaults.standard.string(forKey: "open_route") == "new_item" {
+            if ["new_item", "services"].contains(UserDefaults.standard.string(forKey: "open_route")) {
                 editorTarget = .new()
             }
         }

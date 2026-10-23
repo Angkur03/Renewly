@@ -158,6 +158,18 @@ struct ItemEditorView: View {
             .sheet(isPresented: $isServicePickerPresented) {
                 ServicePickerView { viewModel.applyService($0) }
             }
+            #if DEBUG
+            .task {
+                let opensServices = UserDefaults.standard.string(forKey: "open_route") == "services" || DemoTour.isEnabled
+                guard opensServices, viewModel.canBrowseServices else { return }
+                do {
+                    try await Task.sleep(for: .milliseconds(600))
+                } catch {
+                    return
+                }
+                isServicePickerPresented = true
+            }
+            #endif
             .sheet(isPresented: $viewModel.isPaywallPresented) {
                 PaywallView(entitlements: dependencies.entitlements, highlighting: .unlimitedReminders)
             }

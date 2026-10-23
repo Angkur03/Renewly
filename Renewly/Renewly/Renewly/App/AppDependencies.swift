@@ -52,11 +52,20 @@ struct AppDependencies {
     static func live() -> AppDependencies {
         AppDependencies(
             entitlements: StoreKitEntitlementService(),
-            notifications: NotificationManager(),
+            notifications: NotificationManager(center: notificationCenter()),
             receipts: ReceiptImageStore(),
             pdfExporter: ReceiptPDFExporter(),
             textRecognizer: VisionReceiptTextRecognizer(),
             widgets: LiveWidgetPublisher()
         )
+    }
+
+    private static func notificationCenter() -> any NotificationCenterClient {
+        #if DEBUG
+        if UserDefaults.standard.bool(forKey: DemoDataFactory.demoRemindersKey) {
+            return DemoNotificationCenter()
+        }
+        #endif
+        return LiveNotificationCenter()
     }
 }

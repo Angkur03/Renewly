@@ -142,8 +142,18 @@ final class StoreKitEntitlementService: EntitlementProviding {
                 freeTrialDays: await Self.eligibleFreeTrialDays(for: product)
             ))
         }
+        #if DEBUG
+        if built.isEmpty, UserDefaults.standard.bool(forKey: Self.demoPlansKey) {
+            built = ProPlan.demoPlans(currencyCode: Locale.current.currency?.identifier ?? "USD")
+        }
+        #endif
         plans = built
     }
+
+    #if DEBUG
+    /// `-demo_plans YES` shows sample plans when no StoreKit configuration is attached, e.g. for App Store screenshots.
+    private static let demoPlansKey = "demo_plans"
+    #endif
 
     private static func eligibleFreeTrialDays(for product: Product) async -> Int? {
         guard let subscription = product.subscription,

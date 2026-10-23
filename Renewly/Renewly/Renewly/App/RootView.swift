@@ -31,6 +31,9 @@ struct RootView: View {
     @State private var foregroundCount = 0
     @State private var path = NavigationPath()
     @State private var newItemRequest: ItemCategory?
+    #if DEBUG
+    @State private var isDebugPaywallPresented = false
+    #endif
 
     private var reminderSyncKey: String {
         "\(hasLoadedEntitlements)-\(dependencies.entitlements.isPro)-\(remindersEnabled)-\(reminderOffsetsRaw)-\(foregroundCount)"
@@ -80,11 +83,23 @@ struct RootView: View {
         }
         #if DEBUG
         .task {
-            switch UserDefaults.standard.string(forKey: "open_route") {
+            if DemoTour.isEnabled {
+                await runDemoTour()
+                return
+            }
+            let route = UserDefaults.standard.string(forKey: "open_route") ?? ""
+            switch route {
             case "insights": path.append(AppRoute.insights)
             case "settings": path.append(AppRoute.settings)
-            default: break
+            case "paywall": isDebugPaywallPresented = true
+            default:
+                if route.hasPrefix(Self.debugItemRoutePrefix) {
+                    openDebugItem(titled: String(route.dropFirst(Self.debugItemRoutePrefix.count)))
+                }
             }
+        }
+        .sheet(isPresented: $isDebugPaywallPresented) {
+            PaywallView(entitlements: dependencies.entitlements)
         }
         #endif
         .task {
@@ -94,10 +109,7 @@ struct RootView: View {
         }
         .task(id: reminderSyncKey) {
             #if DEBUG
-            DemoDataFactory.seedFromLaunchArguments(
-                into: modelContext,
-                currency: UserDefaults.standard.string(forKey: AppStorageKey.primaryCurrency) ?? CurrencyDefaults.deviceCurrencyCode
-            )
+            seedDemoData()
             #endif
             RenewalRolloverService().rollForward(in: modelContext)
             guard hasLoadedEntitlements else { return }
@@ -130,6 +142,55 @@ struct RootView: View {
     }
 
     private static let logger = Logger(subsystem: "com.beleiveinAllahRenewly.Renewly", category: "Navigation")
+
+    #if DEBUG
+    /// `-open_route "item:Netflix Premium"` opens that item, e.g. for App Store screenshots.
+    private static let debugItemRoutePrefix = "item:"
+
+    private func seedDemoData() {
+        DemoDataFactory.seedFromLaunchArguments(
+            into: modelContext,
+            currency: UserDefaults.standard.string(forKey: AppStorageKey.primaryCurrency) ?? CurrencyDefaults.deviceCurrencyCode
+        )
+    }
+
+    /// Seeds first, because this can run before the sync task that normally seeds demo data.
+    private func openDebugItem(titled title: String) {
+        seedDemoData()
+        let descriptor = FetchDescriptor<TrackedItem>(predicate: #Predicate { $0.title == title })
+        do {
+            guard let item = try modelContext.fetch(descriptor).first else { return }
+            path.append(item)
+        } catch {
+            Self.logger.error("Could not load the item for a debug route.")
+        }
+    }
+
+    private func runDemoTour() async {
+        let clock = ContinuousClock()
+        var nextStop = clock.now
+        for (stop, seconds) in DemoTour.stops {
+            show(stop)
+            // Deadlines come from one start time so slow screens can't push later stops off the video timeline.
+            nextStop = nextStop.advanced(by: .seconds(seconds))
+            do {
+                try await Task.sleep(until: nextStop, clock: clock)
+            } catch {
+                return
+            }
+        }
+    }
+
+    private func show(_ stop: DemoTour.Stop) {
+        switch stop {
+        case .dashboard: path = NavigationPath()
+        case .item(let title): openDebugItem(titled: title)
+        case .insights: path.append(AppRoute.insights)
+        case .settings: path.append(AppRoute.settings)
+        case .newSubscription: newItemRequest = .subscription
+        }
+    }
+    #endif
 }
 
 #Preview("Populated") {
