@@ -6,6 +6,7 @@
 // Copyright © 2026. All rights reserved.
 //
 
+import StoreKit
 import SwiftData
 import SwiftUI
 
@@ -14,6 +15,7 @@ struct ItemEditorView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.requestReview) private var requestReview
     @AppStorage(AppStorageKey.remindersEnabled) private var remindersEnabled = true
     @AppStorage(AppStorageKey.reminderOffsets) private var reminderOffsetsRaw = ReminderPreferences.defaultOffsetsRaw
     @Query(filter: #Predicate<TrackedItem> { $0.isNotificationEnabled }) private var alertItems: [TrackedItem]
@@ -250,11 +252,24 @@ struct ItemEditorView: View {
     private func save() {
         saveTrigger += 1
         let alertIDs = activeAlertItemIDs
+        let isNewItem = !viewModel.isEditing
         Task {
-            if await viewModel.save(in: modelContext, activeAlertItemIDs: alertIDs) {
-                dismiss()
-            }
+            guard await viewModel.save(in: modelContext, activeAlertItemIDs: alertIDs) else { return }
+            let asksForReview = isNewItem && ReviewPrompt().recordAddedItem()
+            dismiss()
+            guard asksForReview else { return }
+            await askForReviewOnceDismissed()
         }
+    }
+
+    /// Waits for the sheet to close so the rating prompt appears over the dashboard, not mid-animation.
+    private func askForReviewOnceDismissed() async {
+        do {
+            try await Task.sleep(for: .seconds(1))
+        } catch {
+            return
+        }
+        requestReview()
     }
 }
 

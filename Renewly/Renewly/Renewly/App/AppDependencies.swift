@@ -14,6 +14,8 @@ nonisolated enum AppStorageKey {
     static let remindersEnabled = "reminders_enabled"
     static let reminderOffsets = "reminder_offsets"
     static let debugProOverride = "debug_pro_override"
+    static let reviewAddedItemCount = "review_added_item_count"
+    static let reviewLastPromptVersion = "review_last_prompt_version"
 }
 
 nonisolated enum CurrencyDefaults {
