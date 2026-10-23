@@ -235,8 +235,8 @@ In the **Shortcuts app**, the same actions can be combined into automations. For
 
 Product IDs:
 
-- `com.beleiveinAllahRenewly.Renewly.pro.monthly`
-- `com.beleiveinAllahRenewly.Renewly.pro.yearly`
+- `com.applab.Renewly.pro.monthly`
+- `com.applab.Renewly.pro.yearly`
 
 Prices are set in App Store Connect and shown in the user's local currency. Purchases, restores and refunds are handled by Apple through StoreKit 2.
 

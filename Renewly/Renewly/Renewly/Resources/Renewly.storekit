@@ -45,7 +45,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.beleiveinAllahRenewly.Renewly.pro.monthly",
+          "productID" : "com.applab.Renewly.pro.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Renewly Pro Monthly",
           "subscriptionGroupID" : "21540001",
@@ -74,7 +74,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.beleiveinAllahRenewly.Renewly.pro.yearly",
+          "productID" : "com.applab.Renewly.pro.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Renewly Pro Yearly",
           "subscriptionGroupID" : "21540001",
