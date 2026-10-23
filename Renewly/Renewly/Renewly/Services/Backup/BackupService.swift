@@ -106,7 +106,7 @@ struct BackupService {
         }
         let isSubscription = category == .subscription
         let cancellationURL = isSubscription
-            ? backup.cancellationURL.flatMap { ItemEditorViewModel.sanitized($0, maxLength: 2048) }
+            ? backup.cancellationURL.flatMap { ItemEditorViewModel.sanitized($0, maxLength: WebLink.maxLength) }
             : nil
         return TrackedItem(
             id: backup.id,

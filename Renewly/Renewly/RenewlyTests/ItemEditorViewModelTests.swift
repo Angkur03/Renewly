@@ -93,6 +93,31 @@ struct ItemEditorViewModelTests {
         #expect((viewModel.validationMessage == nil) == isValid)
     }
 
+    @Test("Cancellation links are validated", arguments: [
+        ("", true), ("netflix.com/cancel", true), ("https://example.com", true),
+        ("netflix", false), ("javascript:alert(1)", false),
+    ])
+    func cancellationLinkValidation(link: String, isValid: Bool) {
+        let viewModel = makeViewModel()
+        viewModel.title = "Netflix"
+        viewModel.cancellationURL = link
+        #expect((viewModel.validationMessage == nil) == isValid)
+    }
+
+    @Test("A link typed without https is saved with it")
+    func bareLinkSavedWithScheme() async throws {
+        let context = try makeContext()
+        let viewModel = makeViewModel()
+        viewModel.title = "Netflix"
+        viewModel.cancellationURL = " netflix.com/cancelplan "
+        viewModel.isNotificationEnabled = false
+
+        #expect(await viewModel.save(in: context, activeAlertItemIDs: []))
+
+        let saved = try context.fetch(FetchDescriptor<TrackedItem>())
+        #expect(saved.first?.cancellationURL == "https://netflix.com/cancelplan")
+    }
+
     @Test("A past subscription date is saved as the next renewal")
     func pastSubscriptionRollsForwardOnSave() async throws {
         let context = try makeContext()

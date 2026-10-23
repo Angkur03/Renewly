@@ -4634,52 +4634,6 @@
         }
       }
     },
-    "Cancellation link must start with https://." : {
-      "localizations" : {
-        "bn" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "বাতিলের লিংক অবশ্যই https:// দিয়ে শুরু হতে হবে।"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der Kündigungslink muss mit https:// beginnen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El enlace de cancelación debe empezar por https://."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le lien de résiliation doit commencer par https://."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "解約リンクは https:// で始まる必要があります。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O link de cancelamento deve começar com https://."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "取消链接必须以 https:// 开头。"
-          }
-        }
-      }
-    },
     "Caribbean Guilder" : {
       "localizations" : {
         "bn" : {
@@ -6247,6 +6201,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请输入名称。"
+          }
+        }
+      }
+    },
+    "Enter a valid link, like netflix.com/cancel." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "একটি সঠিক লিংক দিন, যেমন netflix.com/cancel।"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib einen gültigen Link ein, z. B. netflix.com/cancel."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce un enlace válido, como netflix.com/cancel."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez un lien valide, comme netflix.com/cancel."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効なリンクを入力してください（例：netflix.com/cancel）。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite um link válido, como netflix.com/cancel."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入有效链接，例如 netflix.com/cancel。"
           }
         }
       }
@@ -10808,6 +10808,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打开编辑器"
+          }
+        }
+      }
+    },
+    "Opens the link in your browser" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "আপনার ব্রাউজারে লিংকটি খোলে"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnet den Link in deinem Browser"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre el enlace en tu navegador"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre le lien dans votre navigateur"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブラウザでリンクを開きます"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre o link no seu navegador"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在浏览器中打开链接"
           }
         }
       }

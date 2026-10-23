@@ -116,7 +116,7 @@ final class ItemEditorViewModel {
         category = .subscription
         title = service.name
         billingCycle = service.billingCycle
-        if let url = service.manageURL, Self.sanitized(cancellationURL, maxLength: 2048) == nil {
+        if let url = service.manageURL, Self.sanitized(cancellationURL, maxLength: WebLink.maxLength) == nil {
             cancellationURL = url
         }
     }
@@ -191,9 +191,8 @@ final class ItemEditorViewModel {
     var trimmedTitle: String { Self.sanitized(title, maxLength: Self.maxTitleLength) ?? "" }
 
     var isCancellationURLValid: Bool {
-        guard let value = Self.sanitized(cancellationURL, maxLength: 2048) else { return true }
-        guard let url = URL(string: value), let scheme = url.scheme?.lowercased() else { return false }
-        return ["http", "https"].contains(scheme) && url.host() != nil
+        guard let value = Self.sanitized(cancellationURL, maxLength: WebLink.maxLength) else { return true }
+        return WebLink.url(from: value) != nil
     }
 
     var validationMessage: String? {
@@ -208,7 +207,7 @@ final class ItemEditorViewModel {
                 ? String(localized: "The renewal date must be after the start date.")
                 : String(localized: "The warranty end date must be after the purchase date.")
         }
-        if category == .subscription && !isCancellationURLValid { return String(localized: "Cancellation link must start with https://.") }
+        if category == .subscription && !isCancellationURLValid { return String(localized: "Enter a valid link, like netflix.com/cancel.") }
         return nil
     }
 
@@ -481,7 +480,9 @@ final class ItemEditorViewModel {
         switch category {
         case .subscription:
             target.billingCycle = billingCycle
-            target.cancellationURL = Self.sanitized(cancellationURL, maxLength: 2048)
+            target.cancellationURL = Self.sanitized(cancellationURL, maxLength: WebLink.maxLength)
+                .flatMap(WebLink.url(from:))?
+                .absoluteString
             target.serialNumber = nil
             target.retailer = nil
         case .warranty:

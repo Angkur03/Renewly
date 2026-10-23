@@ -164,13 +164,29 @@ struct ItemDetailView: View {
                         .textSelection(.enabled)
                 }
                 if let url = item.validCancellationURL {
-                    Link(destination: url) {
-                        Label("Manage or cancel", systemImage: "arrow.up.right.square")
-                            .appFont(.body)
-                    }
+                    linkRow(url)
                 }
             }
         }
+    }
+
+    private func linkRow(_ url: URL) -> some View {
+        Link(destination: url) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Manage or cancel")
+                    .appFont(.subheadline)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text(WebLink.displayText(for: url))
+                    .appFont(.body)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Image(systemName: "arrow.up.right")
+                    .font(.footnote.weight(.semibold))
+            }
+            .contentShape(Rectangle())
+        }
+        .accessibilityHint("Opens the link in your browser")
     }
 
     @ViewBuilder

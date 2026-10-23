@@ -93,10 +93,6 @@ final class TrackedItem {
     }
 
     var validCancellationURL: URL? {
-        guard let cancellationURL, let url = URL(string: cancellationURL),
-              let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme) else {
-            return nil
-        }
-        return url
+        cancellationURL.flatMap(WebLink.url(from:))
     }
 }
