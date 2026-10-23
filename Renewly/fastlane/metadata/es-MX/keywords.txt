@@ -1,0 +1,1 @@
+cancelar,recordatorio,gastos,presupuesto,recibos,renovación,pagos,finanzas,cuentas,mensualidad

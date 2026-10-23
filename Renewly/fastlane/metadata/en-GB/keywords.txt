@@ -1,0 +1,1 @@
+manager,bills,direct,debit,budget,expenses,renewal,cancel,receipt,guarantee,spending,money,outgoings
