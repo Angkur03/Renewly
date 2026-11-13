@@ -34,13 +34,20 @@ final class StoreKitEntitlementService: EntitlementProviding {
 
     func loadProducts() async {
         do {
-            let loaded = try await Product.products(for: ProPlanKind.allCases.map(\.productID))
             var byKind: [ProPlanKind: Product] = [:]
-            for product in loaded {
+            
+            let ids = ProPlanKind.allCases.map(\.productID)
+            print("Requesting IDs:", ids)
+
+            let storeProducts = try await Product.products(for: ids)
+            print("Raw StoreKit products count:", storeProducts.count, storeProducts.map(\.id))
+            
+            for product in storeProducts {
                 if let kind = ProPlanKind(productID: product.id) {
                     byKind[kind] = product
                 }
             }
+            print("product: \(storeProducts.count)")
             products = byKind
             await rebuildPlans()
         } catch {

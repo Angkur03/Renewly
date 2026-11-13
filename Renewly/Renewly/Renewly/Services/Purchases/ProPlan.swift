@@ -11,22 +11,27 @@ import Foundation
 nonisolated enum ProPlanKind: String, CaseIterable, Identifiable, Sendable {
     case monthly
     case yearly
+    case weekly
+    
 
-    static let productIDPrefix = "com.applab.Renewly.pro."
+
+    static let productIDPrefix = "com.applab.Renewly.pro.version."
 
     var id: String { rawValue }
-    var productID: String { Self.productIDPrefix + rawValue }
+    var productID: String { Self.productIDPrefix + rawValue.capitalized }
 
     var title: String {
         switch self {
+        case .weekly: String(localized: "Weekly")
         case .monthly: String(localized: "Monthly")
         case .yearly: String(localized: "Yearly")
         }
     }
 
+    /// Matches the exact IDs from `productID`, so the suffix's capitalization can't drift from the raw value.
     init?(productID: String) {
-        guard productID.hasPrefix(Self.productIDPrefix) else { return nil }
-        self.init(rawValue: String(productID.dropFirst(Self.productIDPrefix.count)))
+        guard let kind = Self.allCases.first(where: { $0.productID == productID }) else { return nil }
+        self = kind
     }
 }
 
@@ -45,6 +50,8 @@ nonisolated struct ProPlan: Identifiable, Equatable, Sendable {
         switch kind {
         case .monthly: String(localized: "\(displayPrice)/month", comment: "Plan price, e.g. $2.99/month")
         case .yearly: String(localized: "\(displayPrice)/year", comment: "Plan price, e.g. $19.99/year")
+        case .weekly:
+            String(localized: "\(displayPrice)/week", comment: "Plan price, e.g. $1.99/week")
         }
     }
 

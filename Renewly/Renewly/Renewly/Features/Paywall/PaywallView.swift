@@ -199,7 +199,7 @@ struct PaywallView: View {
                             .appFont(.caption)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text(plan.kind == .monthly ? "Billed every month" : "Billed every year")
+                        Text(billingNote(for: plan.kind))
                             .appFont(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -210,7 +210,7 @@ struct PaywallView: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(plan.displayPrice)
                         .appFont(.title3)
-                    Text(plan.pricePerMonthText.map { "\($0)/mo" } ?? "per month")
+                    Text(plan.pricePerMonthText.map { "\($0)/mo" } ?? periodNote(for: plan.kind))
                         .appFont(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -226,6 +226,22 @@ struct PaywallView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func billingNote(for kind: ProPlanKind) -> LocalizedStringKey {
+        switch kind {
+        case .weekly: "Billed every week"
+        case .monthly: "Billed every month"
+        case .yearly: "Billed every year"
+        }
+    }
+
+    private func periodNote(for kind: ProPlanKind) -> LocalizedStringKey {
+        switch kind {
+        case .weekly: "per week"
+        case .monthly: "per month"
+        case .yearly: "per year"
+        }
     }
 
     @ViewBuilder
