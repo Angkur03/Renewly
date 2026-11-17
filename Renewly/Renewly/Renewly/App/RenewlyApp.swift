@@ -13,7 +13,9 @@ import SwiftUI
 struct RenewlyApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @AppStorage(AppStorageKey.theme) private var theme: AppTheme = .system
+    @AppStorage(AppStorageKey.hasCompletedOnboarding) private var hasCompletedOnboarding = false
     @State private var isShowingSplash = true
+    @State private var isShowingOnboarding = OnboardingGate.shouldShow
 
     private let modelContainer: ModelContainer
     private let isUsingTemporaryStorage: Bool
@@ -34,6 +36,18 @@ struct RenewlyApp: App {
                     isUsingTemporaryStorage: isUsingTemporaryStorage,
                     notificationRouter: appDelegate.notificationRouter
                 )
+
+                if isShowingOnboarding {
+                    OnboardingView {
+                        hasCompletedOnboarding = true
+                        withAnimation(.easeOut(duration: 0.4)) {
+                            isShowingOnboarding = false
+                        }
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .zIndex(1)
+                }
+
                 if isShowingSplash {
                     SplashView {
                         withAnimation(.easeOut(duration: 0.45)) {
@@ -41,7 +55,7 @@ struct RenewlyApp: App {
                         }
                     }
                     .transition(.opacity.combined(with: .scale(scale: 1.1)))
-                    .zIndex(1)
+                    .zIndex(2)
                 }
             }
             .environment(\.appTheme, theme)
